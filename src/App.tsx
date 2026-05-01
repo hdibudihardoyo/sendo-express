@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import AuthenticatedLayout from "./components/layouts/authenticated-layout";
 
@@ -34,83 +34,67 @@ import EditUserAddressPage from "./pages/user-addresses/edit";
 import NoAddressPage from "./pages/send-package/no-address";
 
 function App() {
-	return (
-		<Routes>
-			{/* Auth Routes */}
-			<Route path="/auth" element={<AuthPage />} />
-			<Route path="/auth/login" element={<LoginPage />} />
-			<Route path="/auth/register" element={<RegisterPage />} />
+  return (
+    <Routes>
+      {/* Redirect to login by default */}
+      <Route path="/" element={<Navigate to="/auth/login" replace />} />
 
-			{/* Legacy auth routes - redirect for compatibility */}
-			<Route path="/login" element={<LoginPage />} />
-			<Route path="/register" element={<RegisterPage />} />
+      {/* Auth Routes */}
+      <Route path="/auth" element={<AuthPage />} />
+      <Route path="/auth/login" element={<LoginPage />} />
+      <Route path="/auth/register" element={<RegisterPage />} />
 
-			{/* Protected Routes */}
-			<Route element={<AuthenticatedLayout />}>
-				<Route path="/" element={<DashboardPage />} />
-				<Route path="/dashboard" element={<DashboardPage />} />
-				<Route path="/profile" element={<ProfilePage />} />
+      {/* Legacy auth routes - redirect for compatibility */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
-				{/* Branch Management */}
-				<Route path="/branch" element={<BranchPage />} />
+      {/* Protected Routes */}
+      <Route element={<AuthenticatedLayout />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
-				{/* Role Management */}
-				<Route path="/role" element={<RolePage />} />
+        {/* Branch Management */}
+        <Route path="/branch" element={<BranchPage />} />
 
-				{/* Employee Management */}
-				<Route path="/employee" element={<EmployeePage />} />
+        {/* Role Management */}
+        <Route path="/role" element={<RolePage />} />
 
-				{/* User Address Management */}
-				<Route path="/user-addresses" element={<UserAddressesPage />} />
-				<Route
-					path="/user-addresses/add"
-					element={<AddUserAddressPage />}
-				/>
-				<Route
-					path="/user-addresses/edit/:id"
-					element={<EditUserAddressPage />}
-				/>
+        {/* Employee Management */}
+        <Route path="/employee" element={<EmployeePage />} />
 
-				{/* Delivery Management */}
-				<Route path="/delivery" element={<DeliveryPage />} />
+        {/* User Address Management */}
+        <Route path="/user-addresses" element={<UserAddressesPage />} />
+        <Route path="/user-addresses/add" element={<AddUserAddressPage />} />
+        <Route
+          path="/user-addresses/edit/:id"
+          element={<EditUserAddressPage />}
+        />
 
-				{/* Package Sending */}
-				<Route path="/send-package" element={<SendPackagePage />} />
-				<Route
-					path="/send-package/no-address"
-					element={<NoAddressPage />}
-				/>
-				<Route
-					path="/send-package/add"
-					element={<AddSendPackagePage />}
-				/>
-				<Route
-					path="/send-package/detail/:id"
-					element={<DetailSendPackagePage />}
-				/>
-				<Route
-					path="/send-package/pay/:id"
-					element={<PaySendPackagePage />}
-				/>
+        {/* Delivery Management */}
+        <Route path="/delivery" element={<DeliveryPage />} />
 
-				{/* History Management */}
-				<Route path="/history" element={<HistoryPage />} />
-				<Route
-					path="/history/detail/:id"
-					element={<DetailHistoryPage />}
-				/>
+        {/* Package Sending */}
+        <Route path="/send-package" element={<SendPackagePage />} />
+        <Route path="/send-package/no-address" element={<NoAddressPage />} />
+        <Route path="/send-package/add" element={<AddSendPackagePage />} />
+        <Route
+          path="/send-package/detail/:id"
+          element={<DetailSendPackagePage />}
+        />
+        <Route path="/send-package/pay/:id" element={<PaySendPackagePage />} />
 
-				{/* Package Tracking */}
-				<Route path="/track-package" element={<TrackPackagePage />} />
+        {/* History Management */}
+        <Route path="/history" element={<HistoryPage />} />
+        <Route path="/history/detail/:id" element={<DetailHistoryPage />} />
 
-				{/* Shipment Branch */}
-				<Route
-					path="/shipment-branch"
-					element={<ShipmentBranchPage />}
-				/>
-			</Route>
-		</Routes>
-	);
+        {/* Package Tracking */}
+        <Route path="/track-package" element={<TrackPackagePage />} />
+
+        {/* Shipment Branch */}
+        <Route path="/shipment-branch" element={<ShipmentBranchPage />} />
+      </Route>
+    </Routes>
+  );
 }
 
 export default App;

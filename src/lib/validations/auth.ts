@@ -13,6 +13,8 @@ export const loginSchema = z.object({
     .min(8, "Password minimal 8 karakter"),
 });
 
+export type LoginFormData = z.infer<typeof loginSchema>;
+
 export const registerSchema = z
   .object({
     name: z

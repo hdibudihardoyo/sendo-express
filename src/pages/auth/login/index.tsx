@@ -48,7 +48,9 @@ export default function LoginPage() {
                 variant="Bulk"
                 size={32}
               />
-              <h1 className="text-3xl font-bold text-dark-green">KirimAja</h1>
+              <h1 className="text-3xl font-bold text-dark-green">
+                SendoExpress
+              </h1>
             </div>
           </div>
 

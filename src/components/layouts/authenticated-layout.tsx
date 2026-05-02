@@ -12,7 +12,6 @@ import {
 import { Input } from "../ui/input";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "../ui/sidebar";
 import { useAuth } from "../../hooks/use-auth";
-import { API_CONFIG } from "@/lib/api/config";
 
 export default function AuthenticatedLayout() {
   const { user, logout, isLoggingOut } = useAuth();
@@ -43,7 +42,7 @@ export default function AuthenticatedLayout() {
                     <img
                       src={
                         user?.avatar
-                          ? `${API_CONFIG.baseURL}/${user.avatar}`
+                          ? user.avatar
                           : "/images/vespa-tiger.jpg"
                       }
                       alt="User Avatar"
@@ -54,7 +53,7 @@ export default function AuthenticatedLayout() {
                         {user?.fullName || "User FullName"}
                       </span>
                       <span className="text-sm truncate">
-                        {user?.role?.name || "User Role"}
+                        {user?.role || "User Role"}
                       </span>
                     </div>
                   </div>

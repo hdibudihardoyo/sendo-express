@@ -1,5 +1,4 @@
 // Authentication related types
-import type { Permission } from "./role";
 
 export interface User {
   id: number;
@@ -23,18 +22,31 @@ export interface RegisterRequest {
   confirmPassword: string;
 }
 
+export interface ApiResponse<T> {
+  meta: {
+    message: string;
+    statusCode: number;
+    success: boolean;
+  };
+  data: T;
+}
+
+export interface LoginResponseData {
+  id: number;
+  fullName: string;
+  email: string;
+  avatar?: string | null;
+  role: string;
+  accessToken: string;
+}
+
+export type UserResponseData = Omit<LoginResponseData, "accessToken">;
+
 export interface LoginResponse {
   accessToken: string;
-  user: {
-    id: number;
-    fullName: string;
-    email: string;
-    avatar?: string | null;
-    role: {
-      id: number;
-      name: string;
-      key: string;
-      permissions?: Permission[];
-    };
-  };
+  user: UserResponseData;
+}
+
+export interface RegisterResponse {
+  user: UserResponseData;
 }

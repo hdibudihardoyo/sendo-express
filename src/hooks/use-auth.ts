@@ -59,7 +59,7 @@ export const useAuth = () => {
 
     onSuccess: () => {
       toast.success("Logout berhasil!");
-      navigate("/login");
+      navigate("/auth/login");
     },
 
     onError: (error: Error) => {
@@ -72,19 +72,13 @@ export const useAuth = () => {
     mutationFn: authService.register,
 
     onSuccess: (data) => {
-      if (!data?.accessToken || !data?.user) {
+      if (!data?.user) {
         toast.error("Response tidak valid dari server.");
         return;
       }
 
-      if (data?.accessToken || data?.user) {
-        tokenService.setToken(data.accessToken);
-        userService.setUser(data.user);
-
-        queryClient.setQueryData(["user", "auth"], data.user);
-        toast.success("Register berhasil!");
-        navigate("/auth/login");
-      }
+      toast.success("Register berhasil!");
+      navigate("/auth/login");
     },
 
     onError: (error: Error) => {

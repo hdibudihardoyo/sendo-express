@@ -1,16 +1,31 @@
 import { apiClient } from "../axios";
 import { handleAxiosError } from "../../utils/error-handler";
 import type { AxiosErrorType } from "../../utils/api-error-types";
-import type { LoginRequest, LoginResponse, RegisterRequest } from "../types";
+import type {
+  ApiResponse,
+  LoginRequest,
+  LoginResponse,
+  LoginResponseData,
+  RegisterRequest,
+  RegisterResponse,
+  UserResponseData,
+} from "../types";
 
 export const authService = {
   async login(request: LoginRequest): Promise<LoginResponse> {
     try {
-      const response = await apiClient.post<LoginResponse>(
+      const response = await apiClient.post<ApiResponse<LoginResponseData>>(
         "/api/auth/login",
         request,
       );
-      return response.data;
+
+      const loginData = response.data.data;
+      const { accessToken, ...user } = loginData;
+
+      return {
+        accessToken,
+        user,
+      };
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);
@@ -35,13 +50,16 @@ export const authService = {
     return JSON.parse(user);
   },
 
-  async register(request: RegisterRequest): Promise<LoginResponse> {
+  async register(request: RegisterRequest): Promise<RegisterResponse> {
     try {
-      const response = await apiClient.post<LoginResponse>(
+      const response = await apiClient.post<ApiResponse<UserResponseData>>(
         "/api/auth/register",
         request,
       );
-      return response.data;
+
+      return {
+        user: response.data.data,
+      };
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);

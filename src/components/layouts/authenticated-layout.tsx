@@ -41,9 +41,7 @@ export default function AuthenticatedLayout() {
                   <div className="cursor-pointer flex items-center gap-2 pr-2 sm:pr-4 min-w-0">
                     <img
                       src={
-                        user?.avatar
-                          ? user.avatar
-                          : "/images/vespa-tiger.jpg"
+                        user?.avatar ? user.avatar : "/images/vespa-tiger.jpg"
                       }
                       alt="User Avatar"
                       className="w-8 h-8 sm:w-10 sm:h-10 rounded-full flex-shrink-0"

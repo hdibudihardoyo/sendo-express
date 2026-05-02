@@ -1,3 +1,5 @@
+import type { Permission } from "@/lib/api/types/role";
+
 // Authentication related types
 
 export interface User {
@@ -36,7 +38,12 @@ export interface LoginResponseData {
   fullName: string;
   email: string;
   avatar?: string | null;
-  role: string;
+  role: {
+    id: number;
+    name: string;
+    key: string;
+    permissions?: Permission[];
+  };
   accessToken: string;
 }
 

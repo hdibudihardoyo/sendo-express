@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router";
-import { TruckFast } from "iconsax-reactjs";
+import { TruckFast, Sms, Lock1 } from "iconsax-reactjs";
 import { useMeta, META_DATA } from "@/hooks/use-meta";
 import { useAuth } from "@/hooks/use-auth";
 import { useForm } from "react-hook-form";
@@ -15,13 +15,12 @@ import {
   FormMessage,
   FormLabel,
 } from "@/components/ui/form";
+
 export default function LoginPage() {
-  // Use custom meta hook
   useMeta(META_DATA.login);
 
   const { login, isLoggingIn } = useAuth();
 
-  //form setup with zod validation
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -30,128 +29,152 @@ export default function LoginPage() {
     },
   });
 
-  // Handle form submit
   const onSubmit = (values: LoginFormData) => {
     login(values);
   };
 
   return (
-    <>
-      <div className="h-screen grid grid-cols-1 lg:grid-cols-2 overflow-hidden">
-        {/* Left side - Login Form */}
-        <div className="flex flex-col justify-center px-4 sm:px-6 lg:px-8 py-12 relative min-h-screen">
+    <div className="h-screen overflow-hidden flex">
+
+      <div className="flex-1 flex flex-col justify-center items-center px-6 sm:px-10 lg:px-12 bg-[rgba(243,245,245,1)]">
+        <div className="w-full max-w-md">
+
           {/* Logo */}
-          <div className="text-center">
-            <div className="flex items-center justify-center mb-6">
-              <TruckFast
-                className="text-primary size-8 mr-3"
-                variant="Bulk"
-                size={32}
-              />
-              <h1 className="text-3xl font-bold text-dark-green">
-                SendoExpress
-              </h1>
+          <div className="flex items-center gap-2.5 mb-6">
+            <div
+              className="p-1.5 rounded-lg"
+              style={{ background: "rgba(20,54,50,1)" }}
+            >
+              <TruckFast className="text-white" variant="Bulk" size={22} />
             </div>
+            <span
+              className="text-xl font-bold tracking-tight"
+              style={{ color: "rgba(20,54,50,1)" }}
+            >
+              SendoExpress
+            </span>
           </div>
 
           {/* Welcome Text */}
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900">
-              Selamat Datang Kembali! 👋
-            </h2>
-            <p className="text-gray-600 text-base">
+          <div className="mb-6">
+            <h1
+              className="text-2xl font-bold mb-1"
+              style={{ color: "rgba(20,54,50,1)" }}
+            >
+              Selamat Datang!
+            </h1>
+            <p className="text-gray-500 text-sm">
               Masuk ke akun Anda untuk melanjutkan
             </p>
           </div>
 
-          {/* Login Form */}
-          <div className="w-full p-6 lg:p-8 max-h-[calc(100vh-12rem)] overflow-y-auto">
+          {/* Form Card */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
+                className="space-y-4"
               >
+                {/* Email */}
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-base font-medium text-gray-900">
+                      <FormLabel className="text-sm font-semibold text-gray-700">
                         Email
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          type="email"
-                          className="h-12 px-4 text-base bg-gray-50 border-gray-200 focus:bg-white focus:border-primary rounded-lg transition-colors"
-                          placeholder="Email"
-                          {...field}
-                        />
+                        <div className="relative">
+                          <Sms
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none"
+                            size={16}
+                            variant="Linear"
+                          />
+                          <Input
+                            type="email"
+                            placeholder="nama@gmail.com"
+                            className="h-10 pl-9 pr-4 text-sm bg-gray-50 border-gray-200 rounded-xl focus:bg-white transition-all duration-200"
+                            {...field}
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
+                {/* Password */}
                 <FormField
                   control={form.control}
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-base font-medium text-gray-900">
+                      <FormLabel className="text-sm font-semibold text-gray-700">
                         Password
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="Password"
-                          className="h-12 px-4 text-base bg-gray-50 border-gray-200 focus:bg-white focus:border-primary rounded-lg transition-colors"
-                          {...field}
-                        />
+                        <div className="relative">
+                          <Lock1
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none"
+                            size={16}
+                            variant="Linear"
+                          />
+                          <Input
+                            type="password"
+                            placeholder="••••••••"
+                            className="h-10 pl-9 pr-4 text-sm bg-gray-50 border-gray-200 rounded-xl focus:bg-white transition-all duration-200"
+                            {...field}
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button
-                  type="submit"
-                  disabled={isLoggingIn}
-                  className="w-full mt-4"
-                  variant="darkGreen"
-                >
-                  Masuk
-                </Button>
+
+                {/* Submit */}
+                <div className="pt-1">
+                  <Button
+                    type="submit"
+                    disabled={isLoggingIn}
+                    className="w-full h-10 text-sm font-semibold rounded-xl cursor-pointer"
+                    style={{ background: "rgba(20,54,50,1)", color: "#fff" }}
+                  >
+                    {isLoggingIn ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        Memproses...
+                      </span>
+                    ) : (
+                      "Masuk"
+                    )}
+                  </Button>
+                </div>
               </form>
             </Form>
-            <p className="mt-4 text-center text-sm text-gray-600">
-              Belum punya akun?{" "}
-              <Link
-                to="/auth/register"
-                className="text-primary font-medium hover:underline"
-              >
-                Daftar di sini
-              </Link>
-            </p>
-          </div>
-        </div>
-
-        {/* Right side - Illustration */}
-        <div className="lg:order-2 w-full h-screen hidden lg:block">
-          <div className="lg:hidden w-full max-w-sm mx-auto mb-8 p-4">
-            <img
-              src="/images/login.png"
-              alt="Dashboard Preview"
-              className="w-full h-auto object-contain rounded-2xl shadow-lg"
-            />
           </div>
 
-          <div className="hidden lg:block w-full h-screen relative overflow-hidden">
-            <img
-              src="/images/login.png"
-              alt="KirimAja Dashboard Interface"
-              className="w-full h-full object-cover object-left-top"
-            />
-          </div>
+          {/* Footer link */}
+          <p className="mt-4 text-center text-sm text-gray-500">
+            Belum punya akun?{" "}
+            <Link
+              to="/auth/register"
+              className="font-semibold hover:underline cursor-pointer"
+            >
+              Daftar di sini
+            </Link>
+          </p>
         </div>
       </div>
-    </>
+
+      <div className="hidden lg:block w-[50%] relative overflow-hidden">
+        <img
+          src="/images/login.png"
+          alt="SendoExpress Dashboard Preview"
+          className="w-full h-full object-cover object-left-top"
+        />
+      </div>
+    </div >
   );
 }

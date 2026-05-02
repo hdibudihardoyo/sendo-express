@@ -23,6 +23,7 @@ export const useAuth = () => {
     mutationFn: authService.login,
 
     onSuccess: (data) => {
+      console.log("login success data", data);
       if (!data?.accessToken || !data?.user) {
         toast.error("Response tidak valid dari server.");
         return;

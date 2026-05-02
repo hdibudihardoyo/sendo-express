@@ -23,12 +23,12 @@ export const useAuth = () => {
     mutationFn: authService.login,
 
     onSuccess: (data) => {
-      if (!data?.access_token || !data?.user) {
+      if (!data?.accessToken || !data?.user) {
         toast.error("Response tidak valid dari server.");
         return;
       }
 
-      tokenService.setToken(data.access_token);
+      tokenService.setToken(data.accessToken);
       userService.setUser(data.user);
 
       queryClient.setQueryData(["user", "auth"], data.user);
@@ -71,13 +71,13 @@ export const useAuth = () => {
     mutationFn: authService.register,
 
     onSuccess: (data) => {
-      if (!data?.access_token || !data?.user) {
+      if (!data?.accessToken || !data?.user) {
         toast.error("Response tidak valid dari server.");
         return;
       }
 
-      if (data?.access_token || data?.user) {
-        tokenService.setToken(data.access_token);
+      if (data?.accessToken || data?.user) {
+        tokenService.setToken(data.accessToken);
         userService.setUser(data.user);
 
         queryClient.setQueryData(["user", "auth"], data.user);

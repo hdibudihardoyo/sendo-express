@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { TruckFast, Profile, Sms, Lock1, LockSlash } from "iconsax-reactjs";
 import { useMeta, META_DATA } from "@/hooks/use-meta";
 import { useForm } from "react-hook-form";
@@ -205,20 +205,21 @@ export default function RegisterPage() {
                     {isRegistering ? "Memproses..." : "Daftar"}
                   </Button>
                 </div>
+
+                {/* Footer link */}
+                <p className="text-center text-sm text-gray-500">
+                  Sudah punya akun?{" "}
+                  <Link
+                    to="/auth/login"
+                    className="font-semibold hover:underline cursor-pointer"
+                    style={{ color: "rgba(20,54,50,1)" }}
+                  >
+                    Masuk di sini
+                  </Link>
+                </p>
               </form>
             </Form>
           </div>
-
-          {/* Footer link */}
-          <p className="mt-4 text-center text-sm text-gray-500">
-            Sudah punya akun?{" "}
-            <Link
-              to="/auth/login"
-              className="font-semibold hover:underline cursor-pointer"
-            >
-              Masuk di sini
-            </Link>
-          </p>
         </div>
       </div>
 

@@ -15,9 +15,9 @@ export const AuthGuard = ({
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!isLoadingUser && !isAuthenticated) {
+    if (requiredAuth && !isLoadingUser && !isAuthenticated) {
       navigate("/auth/login");
-    } else if (!requiredAuth && isAuthenticated) {
+    } else if (!requiredAuth && !isLoadingUser && isAuthenticated) {
       navigate("/dashboard");
     }
   }, [isAuthenticated, isLoadingUser, requiredAuth, navigate]);

@@ -18,12 +18,12 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
-    localStorage.removeItem("access_token");
+    localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
   },
 
   async getCurrentUser(): Promise<LoginResponse["user"]> {
-    const token = localStorage.getItem("access_token");
+    const token = localStorage.getItem("accessToken");
     if (!token) {
       throw new Error("user not authenticated");
     }
@@ -51,15 +51,15 @@ export const authService = {
 
 export const tokenService = {
   getToken(): string | null {
-    return localStorage.getItem("access_token");
+    return localStorage.getItem("accessToken");
   },
 
   setToken(token: string): void {
-    localStorage.setItem("access_token", token);
+    localStorage.setItem("accessToken", token);
   },
 
   removeToken(): void {
-    localStorage.removeItem("access_token");
+    localStorage.removeItem("accessToken");
   },
 
   isAuthenticated(): boolean {

@@ -24,7 +24,7 @@ export interface RegisterRequest {
 }
 
 export interface LoginResponse {
-  access_token: string;
+  accessToken: string;
   user: {
     id: number;
     fullName: string;

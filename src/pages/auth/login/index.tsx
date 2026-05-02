@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
 import { TruckFast, Sms, Lock1 } from "iconsax-reactjs";
 import { useMeta, META_DATA } from "@/hooks/use-meta";
 import { useAuth } from "@/hooks/use-auth";
@@ -149,20 +149,21 @@ export default function LoginPage() {
                     )}
                   </Button>
                 </div>
+
+                {/* Footer link */}
+                <p className="text-center text-sm text-gray-500">
+                  Belum punya akun?{" "}
+                  <Link
+                    to="/auth/register"
+                    className="font-semibold hover:underline cursor-pointer"
+                    style={{ color: "rgba(20,54,50,1)" }}
+                  >
+                    Daftar di sini
+                  </Link>
+                </p>
               </form>
             </Form>
           </div>
-
-          {/* Footer link */}
-          <p className="mt-4 text-center text-sm text-gray-500">
-            Belum punya akun?{" "}
-            <Link
-              to="/auth/register"
-              className="font-semibold hover:underline cursor-pointer"
-            >
-              Daftar di sini
-            </Link>
-          </p>
         </div>
       </div>
 

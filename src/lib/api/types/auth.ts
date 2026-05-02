@@ -3,7 +3,7 @@ import type { Permission } from "./role";
 
 export interface User {
   id: number;
-  name: string;
+  fullName: string;
   email: string;
   phone_number: string;
   avatar?: string | null;
@@ -11,40 +11,25 @@ export interface User {
   updated_at: string;
 }
 
-export interface AuthLoginResponse {
-  message: string;
-  data: {
-    access_token: string;
-    user: User;
-  };
-}
-
-export interface AuthRegisterResponse {
-  message: string;
-  data?: null;
-}
-
-// Legacy types for backward compatibility (keeping old structure for compatibility)
 export interface LoginRequest {
   email: string;
   password: string;
 }
 
 export interface RegisterRequest {
-  name: string;
+  fullName: string;
   email: string;
   password: string;
-  phone_number: string;
+  confirmPassword: string;
 }
 
 export interface LoginResponse {
   access_token: string;
   user: {
     id: number;
-    name: string;
+    fullName: string;
     email: string;
     avatar?: string | null;
-    phone_number: string;
     role: {
       id: number;
       name: string;

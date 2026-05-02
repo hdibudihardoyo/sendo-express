@@ -17,10 +17,10 @@ export type LoginFormData = z.infer<typeof loginSchema>;
 
 export const registerSchema = z
   .object({
-    name: z
+    fullName: z
       .string()
       .min(1, "Nama wajib diisi")
-      .min(2, "Nama minimal 2 karakter")
+      .min(3, "Nama minimal 3 karakter")
       .max(100, "Nama maksimal 100 karakter"),
 
     email: z
@@ -31,8 +31,11 @@ export const registerSchema = z
     password: z
       .string()
       .max(100, "Password maksimal 100 karakter")
-      .min(1, "Password wajib diisi")
-      .min(8, "Password minimal 8 karakter"),
+      .min(8, "Password minimal 8 karakter")
+      .regex(
+        /^(?=.*[A-Z])(?=.*\d).+$/,
+        "Password harus mengandung minimal 1 huruf besar dan 1 angka",
+      ),
 
     confirmPassword: z.string().min(1, "Konfirmasi password wajib diisi"),
   })

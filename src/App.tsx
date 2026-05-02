@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import AuthenticatedLayout from "./components/layouts/authenticated-layout";
 
 // Auth Pages
-import AuthPage from "./pages/auth";
 import LoginPage from "./pages/auth/login";
 import RegisterPage from "./pages/auth/register";
 
@@ -33,6 +32,9 @@ import AddUserAddressPage from "./pages/user-addresses/add";
 import EditUserAddressPage from "./pages/user-addresses/edit";
 import NoAddressPage from "./pages/send-package/no-address";
 
+// Auth Guard
+import { AuthGuard } from "./components/auth-guard";
+
 function App() {
   return (
     <Routes>
@@ -40,16 +42,31 @@ function App() {
       <Route path="/" element={<Navigate to="/auth/login" replace />} />
 
       {/* Auth Routes */}
-      <Route path="/auth" element={<AuthPage />} />
-      <Route path="/auth/login" element={<LoginPage />} />
-      <Route path="/auth/register" element={<RegisterPage />} />
-
-      {/* Legacy auth routes - redirect for compatibility */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route
+        path="/auth/login"
+        element={
+          <AuthGuard requiredAuth={false}>
+            <LoginPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/auth/register"
+        element={
+          <AuthGuard requiredAuth={false}>
+            <RegisterPage />
+          </AuthGuard>
+        }
+      />
 
       {/* Protected Routes */}
-      <Route element={<AuthenticatedLayout />}>
+      <Route
+        element={
+          <AuthGuard requiredAuth={true}>
+            <AuthenticatedLayout />
+          </AuthGuard>
+        }
+      >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
 

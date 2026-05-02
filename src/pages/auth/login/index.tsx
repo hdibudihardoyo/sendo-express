@@ -35,10 +35,8 @@ export default function LoginPage() {
 
   return (
     <div className="h-screen overflow-hidden flex">
-
       <div className="flex-1 flex flex-col justify-center items-center px-6 sm:px-10 lg:px-12 bg-[rgba(243,245,245,1)]">
         <div className="w-full max-w-md">
-
           {/* Logo */}
           <div className="flex items-center gap-2.5 mb-6">
             <div
@@ -175,6 +173,6 @@ export default function LoginPage() {
           className="w-full h-full object-cover object-left-top"
         />
       </div>
-    </div >
+    </div>
   );
 }

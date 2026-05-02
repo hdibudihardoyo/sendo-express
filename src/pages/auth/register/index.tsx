@@ -14,14 +14,17 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function RegisterPage() {
   useMeta(META_DATA.register);
 
+  const { register, isRegistering } = useAuth();
+
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: "",
+      fullName: "",
       email: "",
       password: "",
       confirmPassword: "",
@@ -29,12 +32,11 @@ export default function RegisterPage() {
   });
 
   const onSubmit = (values: RegisterFormData) => {
-    console.log(values);
+    register(values);
   };
 
   return (
     <div className="h-screen overflow-hidden flex">
-
       {/* Left Form */}
       <div className="flex-1 flex flex-col justify-center items-center px-6 sm:px-10 lg:px-12 bg-[rgba(243,245,245,1)]">
         <div className="w-full max-w-md">
@@ -77,7 +79,7 @@ export default function RegisterPage() {
                 {/* Nama Lengkap */}
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="fullName"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-gray-700">
@@ -192,34 +194,15 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                {/* Terms note */}
-                <p className="text-xs text-gray-400 leading-relaxed">
-                  Dengan mendaftar, Anda menyetujui{" "}
-                  <span
-                    className="font-medium cursor-pointer hover:underline"
-                    style={{ color: "rgba(20,186,187,1)" }}
-                  >
-                    Syarat & Ketentuan
-                  </span>{" "}
-                  serta{" "}
-                  <span
-                    className="font-medium cursor-pointer hover:underline"
-                    style={{ color: "rgba(20,186,187,1)" }}
-                  >
-                    Kebijakan Privasi
-                  </span>{" "}
-                  kami.
-                </p>
-
                 {/* Submit */}
                 <div className="pt-1">
                   <Button
                     type="submit"
-                    disabled={false}
+                    disabled={isRegistering}
                     className="w-full h-10 text-sm font-semibold rounded-xl cursor-pointer"
                     style={{ background: "rgba(20,54,50,1)", color: "#fff" }}
                   >
-                    Buat Akun
+                    {isRegistering ? "Memproses..." : "Daftar"}
                   </Button>
                 </div>
               </form>

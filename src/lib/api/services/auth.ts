@@ -1,7 +1,7 @@
 import { apiClient } from "../axios";
 import { handleAxiosError } from "../../utils/error-handler";
 import type { AxiosErrorType } from "../../utils/api-error-types";
-import type { LoginRequest, LoginResponse } from "../types";
+import type { LoginRequest, LoginResponse, RegisterRequest } from "../types";
 
 export const authService = {
   async login(request: LoginRequest): Promise<LoginResponse> {
@@ -33,6 +33,19 @@ export const authService = {
       throw new Error("User not found");
     }
     return JSON.parse(user);
+  },
+
+  async register(request: RegisterRequest): Promise<LoginResponse> {
+    try {
+      const response = await apiClient.post<LoginResponse>(
+        "/api/auth/register",
+        request,
+      );
+      return response.data;
+    } catch (error) {
+      const errorMessage = handleAxiosError(error as AxiosErrorType);
+      throw new Error(errorMessage);
+    }
   },
 };
 

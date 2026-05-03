@@ -8,3 +8,7 @@ export * from "./types/employee";
 export * from "./types/shipment";
 export * from "./types/shipment-branch";
 export * from "./types/role";
+
+// Export services
+export * from "./services/auth";
+export * from "./services/media";

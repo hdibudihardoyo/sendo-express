@@ -1,36 +1,34 @@
 import { z } from "zod";
 
-// Validation schema for profile form
-export const profileSchema = z.object({
-	name: z
-		.string()
-		.min(1, "Name is required")
-		.min(2, "Name must be at least 2 characters")
-		.max(100, "Name must not exceed 100 characters"),
-	email: z
-		.string()
-		.min(1, "Email is required")
-		.email("Please enter a valid email address"),
-	phone_number: z
-		.string()
-		.min(1, "Phone number is required")
-		.min(10, "Phone number must be at least 10 digits")
-		.max(15, "Phone number must not exceed 15 digits")
-		.regex(/^[0-9+\-\s()]+$/, "Please enter a valid phone number"),
-	password: z
-		.string()
-		.optional()
-		.refine((val) => !val || val.length >= 8, {
-			message: "Password must be at least 8 characters",
-		}),
-});
-
-// Type inference for form data
-export type ProfileFormData = z.infer<typeof profileSchema>;
-
-// Validation schema for update request (includes optional avatar)
-export const updateProfileSchema = profileSchema.extend({
-	avatar: z.instanceof(File).optional(),
+// Validation schema for profile update
+export const updateProfileSchema = z.object({
+  fullName: z
+    .string()
+    .min(1, "Full name is required")
+    .min(2, "Full name must be at least 2 characters")
+    .max(100, "Full name must not exceed 100 characters"),
+  avatar: z.string().optional(), // URL string for avatar
 });
 
 export type UpdateProfileFormData = z.infer<typeof updateProfileSchema>;
+
+// Validation schema for password update
+export const updatePasswordSchema = z
+  .object({
+    oldPassword: z.string().min(1, "Current password is required"),
+    newPassword: z
+      .string()
+      .min(8, "New password must be at least 8 characters")
+      .max(100, "New password must not exceed 100 characters")
+      .regex(
+        /^(?=.*[A-Z])(?=.*\d).+$/,
+        "New password must contain at least one uppercase letter and one number",
+      ),
+    confirmNewPassword: z.string().min(1, "Please confirm your new password"),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "New passwords do not match",
+    path: ["confirmNewPassword"],
+  });
+
+export type UpdatePasswordFormData = z.infer<typeof updatePasswordSchema>;

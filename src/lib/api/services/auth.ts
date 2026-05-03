@@ -10,6 +10,10 @@ import type {
   RegisterResponse,
   UserResponseData,
 } from "../types";
+import type {
+  UpdateProfileRequest,
+  UpdatePasswordRequest,
+} from "../types/profile";
 
 export const authService = {
   async login(request: LoginRequest): Promise<LoginResponse> {
@@ -60,6 +64,38 @@ export const authService = {
       return {
         user: response.data.data,
       };
+    } catch (error) {
+      const errorMessage = handleAxiosError(error as AxiosErrorType);
+      throw new Error(errorMessage);
+    }
+  },
+
+  async updateProfile(
+    request: UpdateProfileRequest,
+  ): Promise<UserResponseData> {
+    try {
+      const response = await apiClient.patch<ApiResponse<UserResponseData>>(
+        "/api/auth/profile",
+        request,
+      );
+
+      return response.data.data;
+    } catch (error) {
+      const errorMessage = handleAxiosError(error as AxiosErrorType);
+      throw new Error(errorMessage);
+    }
+  },
+
+  async updatePassword(
+    request: UpdatePasswordRequest,
+  ): Promise<UserResponseData> {
+    try {
+      const response = await apiClient.patch<ApiResponse<UserResponseData>>(
+        "/api/auth/password",
+        request,
+      );
+
+      return response.data.data;
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);

@@ -109,7 +109,7 @@ export default function LoginPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-semibold text-gray-700">
-                        Password
+                        Kata Sandi
                       </FormLabel>
                       <FormControl>
                         <div className="relative">

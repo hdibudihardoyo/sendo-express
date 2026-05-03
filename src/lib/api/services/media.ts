@@ -12,6 +12,10 @@ export interface MediaUploadResponse {
   isUsed: boolean;
 }
 
+export interface MediaDeleteRequest {
+  publicId: string;
+}
+
 export const mediaService = {
   async uploadSingle(file: File): Promise<MediaUploadResponse> {
     try {
@@ -53,6 +57,15 @@ export const mediaService = {
       );
 
       return response.data.data;
+    } catch (error) {
+      const errorMessage = handleAxiosError(error as AxiosErrorType);
+      throw new Error(errorMessage);
+    }
+  },
+
+  async removeMedia(publicId: string): Promise<void> {
+    try {
+      await apiClient.delete<ApiResponse<null>>(`/api/media/${publicId}`);
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);

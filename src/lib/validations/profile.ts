@@ -4,9 +4,8 @@ import { z } from "zod";
 export const updateProfileSchema = z.object({
   fullName: z
     .string()
-    .min(1, "Full name is required")
-    .min(2, "Full name must be at least 2 characters")
-    .max(100, "Full name must not exceed 100 characters"),
+    .min(1, "Nama Lengkap wajib diisi")
+    .max(100, "Nama Lengkap maksimal 100 karakter"),
   avatar: z.string().optional(), // URL string for avatar
 });
 
@@ -15,19 +14,22 @@ export type UpdateProfileFormData = z.infer<typeof updateProfileSchema>;
 // Validation schema for password update
 export const updatePasswordSchema = z
   .object({
-    oldPassword: z.string().min(1, "Current password is required"),
+    oldPassword: z.string().min(1, "Kata sandi lama wajib diisi"),
+
     newPassword: z
       .string()
-      .min(8, "New password must be at least 8 characters")
+      .min(8, "Kata sandi baru minimal 8 karakter")
       .max(100, "New password must not exceed 100 characters")
       .regex(
         /^(?=.*[A-Z])(?=.*\d).+$/,
-        "New password must contain at least one uppercase letter and one number",
+        "Kata sandi harus mengandung minimal 1 huruf besar dan 1 angka",
       ),
-    confirmNewPassword: z.string().min(1, "Please confirm your new password"),
+    confirmNewPassword: z
+      .string()
+      .min(1, "Konfirmasi kata sandi baru wajib diisi"),
   })
   .refine((data) => data.newPassword === data.confirmNewPassword, {
-    message: "New passwords do not match",
+    message: "Kata sandi baru dan konfirmasi tidak cocok",
     path: ["confirmNewPassword"],
   });
 

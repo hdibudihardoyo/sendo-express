@@ -18,6 +18,8 @@ import {
   useUpdateProfile,
   useUpdatePassword,
   useUploadMedia,
+  // useUploadMultipleMedia,
+  useRemoveMedia,
 } from "@/hooks/use-profile";
 import {
   Card,
@@ -30,6 +32,7 @@ import {
 const Index = () => {
   const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState("");
+  const [selectedPublicId, setSelectedPublicId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Use custom meta hook instead of react-helmet
@@ -42,6 +45,8 @@ const Index = () => {
   const updateProfileMutation = useUpdateProfile();
   const updatePasswordMutation = useUpdatePassword();
   const uploadMediaMutation = useUploadMedia();
+  // const uploadMultipleMediaMutation = useUploadMultipleMedia();
+  const removeMediaMutation = useRemoveMedia();
 
   // Profile form setup
   const profileForm = useForm<UpdateProfileFormData>({
@@ -63,15 +68,16 @@ const Index = () => {
   });
 
   // Set initial values when user data is available
+  const { reset: resetProfile } = profileForm;
   useEffect(() => {
     if (user) {
-      profileForm.reset({
+      resetProfile({
         fullName: user.fullName || "",
         avatar: user.avatar || "",
       });
       setAvatarPreview(user.avatar || "");
     }
-  }, [user, profileForm]);
+  }, [user, resetProfile]);
 
   // Handle avatar file selection
   const handleAvatarSelect = async (
@@ -105,6 +111,7 @@ const Index = () => {
     try {
       const uploadResult = await uploadMediaMutation.mutateAsync(file);
       profileForm.setValue("avatar", uploadResult.fileUrl);
+      setSelectedPublicId(uploadResult.publicId);
     } catch {
       // Error already handled in the hook
       setSelectedAvatar(null);
@@ -117,6 +124,10 @@ const Index = () => {
 
   // Remove avatar
   const removeAvatar = () => {
+    if (selectedPublicId) {
+      removeMediaMutation.mutate(selectedPublicId);
+      setSelectedPublicId(null);
+    }
     setSelectedAvatar(null);
     setAvatarPreview(user?.avatar || "");
     profileForm.setValue("avatar", user?.avatar || "");
@@ -132,24 +143,29 @@ const Index = () => {
 
   // Handle password update
   const onPasswordSubmit = (data: UpdatePasswordFormData) => {
-    updatePasswordMutation.mutate({
-      oldPassword: data.oldPassword,
-      newPassword: data.newPassword,
-    });
-    passwordForm.reset();
+    updatePasswordMutation.mutate(
+      {
+        oldPassword: data.oldPassword,
+        newPassword: data.newPassword,
+        confirmNewPassword: data.confirmNewPassword,
+      },
+      {
+        onSuccess: () => passwordForm.reset(),
+      },
+    );
   };
+
+  const isUploding = uploadMediaMutation.isPending;
 
   return (
     <>
-      <Page title="Profile">
+      <Page title="Profil">
         <div className="grid grid-cols-1 gap-6">
           {/* Profile Update Card */}
           <Card>
             <CardHeader>
-              <CardTitle>Update Profile</CardTitle>
-              <CardDescription>
-                Update your personal information and profile picture.
-              </CardDescription>
+              <CardTitle>Perbarui Profil</CardTitle>
+              <CardDescription>Perbarui informasi profil Anda</CardDescription>
             </CardHeader>
             <CardContent>
               <form
@@ -171,6 +187,7 @@ const Index = () => {
                         size="sm"
                         className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
                         onClick={removeAvatar}
+                        disabled={removeMediaMutation.isPending}
                       >
                         ×
                       </Button>
@@ -180,12 +197,14 @@ const Index = () => {
                     <Button
                       type="button"
                       variant="darkGreen"
-                      className="px-6 py-2"
+                      className="px-6 py-2 cursor-pointer"
                       onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploding}
                     >
-                      Ubah Foto
+                      {isUploding ? "Uploading..." : "Ubah Foto"}
                     </Button>
                     <input
+                      aria-label="Upload avatar"
                       type="file"
                       ref={fileInputRef}
                       accept="image/*"
@@ -201,13 +220,13 @@ const Index = () => {
                     htmlFor="fullName"
                     className="text-sm font-medium text-gray-700 mb-2 block"
                   >
-                    Full Name
+                    Nama Lengkap
                   </Label>
                   <Input
                     {...profileForm.register("fullName")}
                     id="fullName"
                     className="w-full px-4 py-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    placeholder="Enter your full name"
+                    placeholder="Masukkan Nama Lengkap"
                   />
                   {profileForm.formState.errors.fullName && (
                     <p className="text-sm text-red-600 mt-1">
@@ -220,12 +239,12 @@ const Index = () => {
                 <Button
                   type="submit"
                   variant="darkGreen"
-                  className="py-3"
-                  disabled={updateProfileMutation.isPending}
+                  className="py-3 cursor-pointer"
+                  disabled={updateProfileMutation.isPending || isUploding}
                 >
                   {updateProfileMutation.isPending
                     ? "Updating..."
-                    : "Update Profile"}
+                    : "Perbarui Profile"}
                 </Button>
               </form>
             </CardContent>
@@ -234,9 +253,9 @@ const Index = () => {
           {/* Password Update Card */}
           <Card>
             <CardHeader>
-              <CardTitle>Change Password</CardTitle>
+              <CardTitle>Perbarui Kata Sandi</CardTitle>
               <CardDescription>
-                Update your password to keep your account secure.
+                Perbarui kata sandi Anda untuk keamanan akun
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -250,14 +269,14 @@ const Index = () => {
                     htmlFor="oldPassword"
                     className="text-sm font-medium text-gray-700 mb-2 block"
                   >
-                    Current Password
+                    Kata Sandi Lama
                   </Label>
                   <Input
                     {...passwordForm.register("oldPassword")}
                     id="oldPassword"
                     type="password"
                     className="w-full px-4 py-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    placeholder="Enter your current password"
+                    placeholder="••••••••"
                   />
                   {passwordForm.formState.errors.oldPassword && (
                     <p className="text-sm text-red-600 mt-1">
@@ -272,14 +291,14 @@ const Index = () => {
                     htmlFor="newPassword"
                     className="text-sm font-medium text-gray-700 mb-2 block"
                   >
-                    New Password
+                    Kata Sandi Baru
                   </Label>
                   <Input
                     {...passwordForm.register("newPassword")}
                     id="newPassword"
                     type="password"
                     className="w-full px-4 py-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    placeholder="Enter your new password"
+                    placeholder="••••••••"
                   />
                   {passwordForm.formState.errors.newPassword && (
                     <p className="text-sm text-red-600 mt-1">
@@ -294,14 +313,14 @@ const Index = () => {
                     htmlFor="confirmNewPassword"
                     className="text-sm font-medium text-gray-700 mb-2 block"
                   >
-                    Confirm New Password
+                    Konfirmasi Kata Sandi Baru
                   </Label>
                   <Input
                     {...passwordForm.register("confirmNewPassword")}
                     id="confirmNewPassword"
                     type="password"
                     className="w-full px-4 py-3 border border-gray-200 rounded-md focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                    placeholder="Confirm your new password"
+                    placeholder="••••••••"
                   />
                   {passwordForm.formState.errors.confirmNewPassword && (
                     <p className="text-sm text-red-600 mt-1">
@@ -314,12 +333,12 @@ const Index = () => {
                 <Button
                   type="submit"
                   variant="darkGreen"
-                  className="py-3"
+                  className="py-3 cursor-pointer"
                   disabled={updatePasswordMutation.isPending}
                 >
                   {updatePasswordMutation.isPending
                     ? "Updating..."
-                    : "Update Password"}
+                    : "Perbarui Password"}
                 </Button>
               </form>
             </CardContent>

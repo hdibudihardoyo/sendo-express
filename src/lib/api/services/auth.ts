@@ -26,6 +26,9 @@ export const authService = {
       const loginData = response.data.data;
       const { accessToken, ...user } = loginData;
 
+      tokenService.setToken(accessToken);
+      userService.setUser(user);
+
       return {
         accessToken,
         user,
@@ -37,21 +40,21 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
+    tokenService.removeToken();
+    userService.removeUser();
   },
 
   async getCurrentUser(): Promise<LoginResponse["user"]> {
-    const token = localStorage.getItem("accessToken");
+    const token = tokenService.getToken();
     if (!token) {
       throw new Error("user not authenticated");
     }
 
-    const user = localStorage.getItem("user");
+    const user = userService.getUser();
     if (!user) {
       throw new Error("User not found");
     }
-    return JSON.parse(user);
+    return user;
   },
 
   async register(request: RegisterRequest): Promise<RegisterResponse> {
@@ -78,8 +81,11 @@ export const authService = {
         "/api/auth/profile",
         request,
       );
+      const updateUser = response.data.data;
 
-      return response.data.data;
+      userService.setUser(updateUser);
+
+      return updateUser;
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);

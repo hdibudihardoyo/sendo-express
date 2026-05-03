@@ -4,7 +4,6 @@ export interface LegacyUser {
   name: string;
   email: string;
   avatar: string;
-  phone_number: string;
   role: {
     id: number;
     name: string;
@@ -20,4 +19,5 @@ export interface UpdateProfileRequest {
 export interface UpdatePasswordRequest {
   oldPassword: string;
   newPassword: string;
+  confirmNewPassword: string;
 }

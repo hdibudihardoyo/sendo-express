@@ -1,36 +1,36 @@
 import { z } from "zod";
 
-// Validation schema for profile form
-export const profileSchema = z.object({
-	name: z
-		.string()
-		.min(1, "Name is required")
-		.min(2, "Name must be at least 2 characters")
-		.max(100, "Name must not exceed 100 characters"),
-	email: z
-		.string()
-		.min(1, "Email is required")
-		.email("Please enter a valid email address"),
-	phone_number: z
-		.string()
-		.min(1, "Phone number is required")
-		.min(10, "Phone number must be at least 10 digits")
-		.max(15, "Phone number must not exceed 15 digits")
-		.regex(/^[0-9+\-\s()]+$/, "Please enter a valid phone number"),
-	password: z
-		.string()
-		.optional()
-		.refine((val) => !val || val.length >= 8, {
-			message: "Password must be at least 8 characters",
-		}),
-});
-
-// Type inference for form data
-export type ProfileFormData = z.infer<typeof profileSchema>;
-
-// Validation schema for update request (includes optional avatar)
-export const updateProfileSchema = profileSchema.extend({
-	avatar: z.instanceof(File).optional(),
+// Validation schema for profile update
+export const updateProfileSchema = z.object({
+  fullName: z
+    .string()
+    .min(1, "Nama Lengkap wajib diisi")
+    .max(100, "Nama Lengkap maksimal 100 karakter"),
+  avatar: z.string().optional(), // URL string for avatar
 });
 
 export type UpdateProfileFormData = z.infer<typeof updateProfileSchema>;
+
+// Validation schema for password update
+export const updatePasswordSchema = z
+  .object({
+    oldPassword: z.string().min(1, "Kata sandi lama wajib diisi"),
+
+    newPassword: z
+      .string()
+      .min(8, "Kata sandi baru minimal 8 karakter")
+      .max(100, "New password must not exceed 100 characters")
+      .regex(
+        /^(?=.*[A-Z])(?=.*\d).+$/,
+        "Kata sandi harus mengandung minimal 1 huruf besar dan 1 angka",
+      ),
+    confirmNewPassword: z
+      .string()
+      .min(1, "Konfirmasi kata sandi baru wajib diisi"),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "Kata sandi baru dan konfirmasi tidak cocok",
+    path: ["confirmNewPassword"],
+  });
+
+export type UpdatePasswordFormData = z.infer<typeof updatePasswordSchema>;

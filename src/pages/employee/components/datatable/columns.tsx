@@ -54,7 +54,7 @@ export const columns = (
 		cell: ({ row }) => {
 			return (
 				<div className="text-sm font-medium">
-					{row.original.user.name}
+					{row.original.user.fullName}
 				</div>
 			);
 		},

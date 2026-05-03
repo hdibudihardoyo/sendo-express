@@ -1,9 +1,8 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import AuthenticatedLayout from "./components/layouts/authenticated-layout";
 
 // Auth Pages
-import AuthPage from "./pages/auth";
 import LoginPage from "./pages/auth/login";
 import RegisterPage from "./pages/auth/register";
 
@@ -33,84 +32,167 @@ import AddUserAddressPage from "./pages/user-addresses/add";
 import EditUserAddressPage from "./pages/user-addresses/edit";
 import NoAddressPage from "./pages/send-package/no-address";
 
+// Auth Guard
+import { AuthGuard } from "./components/auth-guard";
+
 function App() {
-	return (
-		<Routes>
-			{/* Auth Routes */}
-			<Route path="/auth" element={<AuthPage />} />
-			<Route path="/auth/login" element={<LoginPage />} />
-			<Route path="/auth/register" element={<RegisterPage />} />
+  return (
+    <Routes>
+      {/* Redirect to login by default */}
+      <Route path="/" element={<Navigate to="/auth/login" replace />} />
 
-			{/* Legacy auth routes - redirect for compatibility */}
-			<Route path="/login" element={<LoginPage />} />
-			<Route path="/register" element={<RegisterPage />} />
+      {/* Auth Routes */}
+      <Route
+        path="/auth/login"
+        element={
+          <AuthGuard requiredAuth={false}>
+            <LoginPage />
+          </AuthGuard>
+        }
+      />
+      <Route
+        path="/auth/register"
+        element={
+          <AuthGuard requiredAuth={false}>
+            <RegisterPage />
+          </AuthGuard>
+        }
+      />
 
-			{/* Protected Routes */}
-			<Route element={<AuthenticatedLayout />}>
-				<Route path="/" element={<DashboardPage />} />
-				<Route path="/dashboard" element={<DashboardPage />} />
-				<Route path="/profile" element={<ProfilePage />} />
+      {/* Protected Routes */}
+      <Route
+        element={
+          <AuthGuard requiredAuth={true}>
+            <AuthenticatedLayout />
+          </AuthGuard>
+        }
+      >
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
-				{/* Branch Management */}
-				<Route path="/branch" element={<BranchPage />} />
+        {/* Branch Management */}
+        <Route
+          path="/branch"
+          element={
+            <AuthGuard requiredAuth={true} permission="branches.read">
+              <BranchPage />
+            </AuthGuard>
+          }
+        />
 
-				{/* Role Management */}
-				<Route path="/role" element={<RolePage />} />
+        {/* Role Management */}
+        <Route
+          path="/role"
+          element={
+            <AuthGuard requiredAuth={true} permission="permissions.read">
+              <RolePage />
+            </AuthGuard>
+          }
+        />
 
-				{/* Employee Management */}
-				<Route path="/employee" element={<EmployeePage />} />
+        {/* Employee Management */}
+        <Route
+          path="/employee"
+          element={
+            <AuthGuard requiredAuth={true} permission="employees.read">
+              <EmployeePage />
+            </AuthGuard>
+          }
+        />
 
-				{/* User Address Management */}
-				<Route path="/user-addresses" element={<UserAddressesPage />} />
-				<Route
-					path="/user-addresses/add"
-					element={<AddUserAddressPage />}
-				/>
-				<Route
-					path="/user-addresses/edit/:id"
-					element={<EditUserAddressPage />}
-				/>
+        {/* User Address Management */}
+        <Route path="/user-addresses" element={<UserAddressesPage />} />
+        <Route path="/user-addresses/add" element={<AddUserAddressPage />} />
+        <Route
+          path="/user-addresses/edit/:id"
+          element={<EditUserAddressPage />}
+        />
 
-				{/* Delivery Management */}
-				<Route path="/delivery" element={<DeliveryPage />} />
+        {/* Delivery Management */}
+        <Route
+          path="/delivery"
+          element={
+            <AuthGuard requiredAuth={true} permission="delivery.read">
+              <DeliveryPage />
+            </AuthGuard>
+          }
+        />
 
-				{/* Package Sending */}
-				<Route path="/send-package" element={<SendPackagePage />} />
-				<Route
-					path="/send-package/no-address"
-					element={<NoAddressPage />}
-				/>
-				<Route
-					path="/send-package/add"
-					element={<AddSendPackagePage />}
-				/>
-				<Route
-					path="/send-package/detail/:id"
-					element={<DetailSendPackagePage />}
-				/>
-				<Route
-					path="/send-package/pay/:id"
-					element={<PaySendPackagePage />}
-				/>
+        {/* Package Sending */}
+        <Route
+          path="/send-package"
+          element={
+            <AuthGuard requiredAuth={true} permission="shipments.create">
+              <SendPackagePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/send-package/no-address"
+          element={
+            <AuthGuard requiredAuth={true} permission="shipments.create">
+              <NoAddressPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/send-package/add"
+          element={
+            <AuthGuard requiredAuth={true} permission="shipments.create">
+              <AddSendPackagePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/send-package/detail/:id"
+          element={
+            <AuthGuard requiredAuth={true} permission="shipments.read">
+              <DetailSendPackagePage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/send-package/pay/:id"
+          element={
+            <AuthGuard requiredAuth={true} permission="shipments.read">
+              <PaySendPackagePage />
+            </AuthGuard>
+          }
+        />
 
-				{/* History Management */}
-				<Route path="/history" element={<HistoryPage />} />
-				<Route
-					path="/history/detail/:id"
-					element={<DetailHistoryPage />}
-				/>
+        {/* History Management */}
+        <Route
+          path="/history"
+          element={
+            <AuthGuard requiredAuth={true} permission="history.read">
+              <HistoryPage />
+            </AuthGuard>
+          }
+        />
+        <Route
+          path="/history/detail/:id"
+          element={
+            <AuthGuard requiredAuth={true} permission="history.read">
+              <DetailHistoryPage />
+            </AuthGuard>
+          }
+        />
 
-				{/* Package Tracking */}
-				<Route path="/track-package" element={<TrackPackagePage />} />
+        {/* Package Tracking */}
+        <Route path="/track-package" element={<TrackPackagePage />} />
 
-				{/* Shipment Branch */}
-				<Route
-					path="/shipment-branch"
-					element={<ShipmentBranchPage />}
-				/>
-			</Route>
-		</Routes>
-	);
+        {/* Shipment Branch */}
+        <Route
+          path="/shipment-branch"
+          element={
+            <AuthGuard requiredAuth={true} permission="shipment-branch.input">
+              <ShipmentBranchPage />
+            </AuthGuard>
+          }
+        />
+      </Route>
+    </Routes>
+  );
 }
 
 export default App;

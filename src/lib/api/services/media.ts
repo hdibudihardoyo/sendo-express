@@ -63,9 +63,13 @@ export const mediaService = {
     }
   },
 
-  async removeMedia(publicId: string): Promise<void> {
+  async removeMedia(publicId: MediaDeleteRequest["publicId"]): Promise<void> {
     try {
-      await apiClient.delete<ApiResponse<null>>(`/api/media/${publicId}`);
+      await apiClient.request({
+        method: "DELETE",
+        url: "/api/media",
+        data: { publicId },
+      });
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);

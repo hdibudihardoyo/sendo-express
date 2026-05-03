@@ -14,13 +14,8 @@ import {
 import toast, { Toaster } from "react-hot-toast";
 import { useMeta, META_DATA } from "@/hooks/use-meta";
 import { useAuth } from "@/hooks/use-auth";
-import {
-  useUpdateProfile,
-  useUpdatePassword,
-  useUploadMedia,
-  // useUploadMultipleMedia,
-  useRemoveMedia,
-} from "@/hooks/use-profile";
+import { useUpdateProfile, useUpdatePassword } from "@/hooks/use-profile";
+import { useUploadMedia, useRemoveMedia } from "@/hooks/use-media";
 import {
   Card,
   CardContent,
@@ -32,8 +27,8 @@ import {
 const Index = () => {
   const [selectedAvatar, setSelectedAvatar] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState("");
-  const [selectedPublicId, setSelectedPublicId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadedPublicId, setUploadedPublicId] = useState<string | null>(null);
 
   // Use custom meta hook instead of react-helmet
   useMeta(META_DATA.profile);
@@ -45,7 +40,6 @@ const Index = () => {
   const updateProfileMutation = useUpdateProfile();
   const updatePasswordMutation = useUpdatePassword();
   const uploadMediaMutation = useUploadMedia();
-  // const uploadMultipleMediaMutation = useUploadMultipleMedia();
   const removeMediaMutation = useRemoveMedia();
 
   // Profile form setup
@@ -79,20 +73,19 @@ const Index = () => {
     }
   }, [user, resetProfile]);
 
-  // Handle avatar file selection
+  // Handle avatar upload
+
   const handleAvatarSelect = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       toast.error("Please select an image file");
       return;
     }
 
-    // Validate file size (e.g., max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Image size should be less than 5MB");
       return;
@@ -100,39 +93,48 @@ const Index = () => {
 
     setSelectedAvatar(file);
 
-    // Create preview
+    // Preview lokal dulu
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setAvatarPreview(e.target?.result as string);
-    };
+    reader.onload = (e) => setAvatarPreview(e.target?.result as string);
     reader.readAsDataURL(file);
 
-    // Upload file to server
+    // Upload ke server
     try {
-      const uploadResult = await uploadMediaMutation.mutateAsync(file);
-      profileForm.setValue("avatar", uploadResult.fileUrl);
-      setSelectedPublicId(uploadResult.publicId);
+      const result = await uploadMediaMutation.mutateAsync(file);
+      profileForm.setValue("avatar", result.fileUrl);
+      setUploadedPublicId(result.publicId);
     } catch {
-      // Error already handled in the hook
+      // Error sudah di-handle di hook
       setSelectedAvatar(null);
       setAvatarPreview(user?.avatar || "");
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
-  // Remove avatar
-  const removeAvatar = () => {
-    if (selectedPublicId) {
-      removeMediaMutation.mutate(selectedPublicId);
-      setSelectedPublicId(null);
-    }
-    setSelectedAvatar(null);
-    setAvatarPreview(user?.avatar || "");
-    profileForm.setValue("avatar", user?.avatar || "");
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+  // handle avatar remove
+  const handleRemoveAvatar = () => {
+    const resetLocalState = () => {
+      setSelectedAvatar(null);
+      setAvatarPreview("");
+      profileForm.setValue("avatar", "");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+
+    if (uploadedPublicId) {
+      removeMediaMutation.mutate(String(uploadedPublicId), {
+        onSuccess: () => {
+          setUploadedPublicId(null);
+          updateProfileMutation.mutate(
+            { fullName: user?.fullName || "", avatar: "" },
+            { onSuccess: resetLocalState },
+          );
+        },
+      });
+    } else {
+      updateProfileMutation.mutate(
+        { fullName: user?.fullName || "", avatar: "" },
+        { onSuccess: resetLocalState },
+      );
     }
   };
 
@@ -155,7 +157,7 @@ const Index = () => {
     );
   };
 
-  const isUploding = uploadMediaMutation.isPending;
+  const isUploading = uploadMediaMutation.isPending;
 
   return (
     <>
@@ -186,8 +188,11 @@ const Index = () => {
                         variant="destructive"
                         size="sm"
                         className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
-                        onClick={removeAvatar}
-                        disabled={removeMediaMutation.isPending}
+                        onClick={handleRemoveAvatar}
+                        disabled={
+                          removeMediaMutation.isPending ||
+                          updateProfileMutation.isPending
+                        }
                       >
                         ×
                       </Button>
@@ -199,9 +204,9 @@ const Index = () => {
                       variant="darkGreen"
                       className="px-6 py-2 cursor-pointer"
                       onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploding}
+                      disabled={isUploading}
                     >
-                      {isUploding ? "Uploading..." : "Ubah Foto"}
+                      {isUploading ? "Uploading..." : "Ubah Foto"}
                     </Button>
                     <input
                       aria-label="Upload avatar"
@@ -240,7 +245,7 @@ const Index = () => {
                   type="submit"
                   variant="darkGreen"
                   className="py-3 cursor-pointer"
-                  disabled={updateProfileMutation.isPending || isUploding}
+                  disabled={updateProfileMutation.isPending || isUploading}
                 >
                   {updateProfileMutation.isPending
                     ? "Updating..."

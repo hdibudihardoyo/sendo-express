@@ -10,6 +10,7 @@ export interface Permission {
   id: number;
   name: string;
   key: string;
+  resource: string;
 }
 
 export interface PermissionResponse {

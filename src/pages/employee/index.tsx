@@ -18,7 +18,6 @@ export default function EmployeePage() {
     (employee) =>
       employee.user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      employee.user.phone_number.includes(searchTerm) ||
       employee.branch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       employee.type.toLowerCase().includes(searchTerm.toLowerCase()),
   );

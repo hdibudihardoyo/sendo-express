@@ -2,7 +2,6 @@
 import type {
   Role,
   Permission,
-  RolePermission,
   UpdateRolePermissionsRequest,
 } from "../lib/api/types/role";
 
@@ -124,7 +123,7 @@ export const permissions: Permission[] = [
   },
 ];
 
-const RolePermissions: RolePermission[] = permissions.map((p) => ({
+const RolePermissions: Permission[] = permissions.map((p) => ({
   ...p,
   resource: p.key.split(".")[0],
 }));

@@ -18,18 +18,11 @@ export interface PermissionResponse {
   data: Permission[];
 }
 
-export interface RolePermission {
-  id: number;
-  name: string;
-  key: string;
-  resource: string;
-}
-
 export interface Role {
   id: number;
   name: string;
   key: string;
-  permissions: RolePermission[];
+  permissions: Permission[];
 }
 
 export interface RoleResponse {

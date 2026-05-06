@@ -8,7 +8,7 @@ import type {
   LoginResponseData,
   RegisterRequest,
   RegisterResponse,
-  UserResponseData,
+  User,
 } from "../types";
 import type {
   UpdateProfileRequest,
@@ -23,19 +23,14 @@ export const authService = {
         request,
       );
 
-      const loginData = response.data.data;
-      const { accessToken, ...user } = loginData;
+      const { accessToken, ...user } = response.data.data;
 
       tokenService.setToken(accessToken);
       userService.setUser(user);
 
-      return {
-        accessToken,
-        user,
-      };
+      return { accessToken, user };
     } catch (error) {
-      const errorMessage = handleAxiosError(error as AxiosErrorType);
-      throw new Error(errorMessage);
+      throw new Error(handleAxiosError(error as AxiosErrorType));
     }
   },
 
@@ -44,67 +39,54 @@ export const authService = {
     userService.removeUser();
   },
 
-  async getCurrentUser(): Promise<LoginResponse["user"]> {
+  async getCurrentUser(): Promise<User> {
     const token = tokenService.getToken();
-    if (!token) {
-      throw new Error("user not authenticated");
-    }
+    if (!token) throw new Error("User not authenticated");
 
     const user = userService.getUser();
-    if (!user) {
-      throw new Error("User not found");
-    }
+    if (!user) throw new Error("User not found");
+
     return user;
   },
 
   async register(request: RegisterRequest): Promise<RegisterResponse> {
     try {
-      const response = await apiClient.post<ApiResponse<UserResponseData>>(
+      const response = await apiClient.post<ApiResponse<User>>(
         "/api/auth/register",
         request,
       );
 
-      return {
-        user: response.data.data,
-      };
+      return { user: response.data.data };
     } catch (error) {
-      const errorMessage = handleAxiosError(error as AxiosErrorType);
-      throw new Error(errorMessage);
+      throw new Error(handleAxiosError(error as AxiosErrorType));
     }
   },
 
-  async updateProfile(
-    request: UpdateProfileRequest,
-  ): Promise<UserResponseData> {
+  async updateProfile(request: UpdateProfileRequest): Promise<User> {
     try {
-      const response = await apiClient.patch<ApiResponse<UserResponseData>>(
+      const response = await apiClient.patch<ApiResponse<User>>(
         "/api/auth/profile",
         request,
       );
-      const updateUser = response.data.data;
+      const updatedUser = response.data.data;
+      userService.setUser(updatedUser);
 
-      userService.setUser(updateUser);
-
-      return updateUser;
+      return updatedUser;
     } catch (error) {
-      const errorMessage = handleAxiosError(error as AxiosErrorType);
-      throw new Error(errorMessage);
+      throw new Error(handleAxiosError(error as AxiosErrorType));
     }
   },
 
-  async updatePassword(
-    request: UpdatePasswordRequest,
-  ): Promise<UserResponseData> {
+  async updatePassword(request: UpdatePasswordRequest): Promise<User> {
     try {
-      const response = await apiClient.patch<ApiResponse<UserResponseData>>(
+      const response = await apiClient.patch<ApiResponse<User>>(
         "/api/auth/password",
         request,
       );
 
       return response.data.data;
     } catch (error) {
-      const errorMessage = handleAxiosError(error as AxiosErrorType);
-      throw new Error(errorMessage);
+      throw new Error(handleAxiosError(error as AxiosErrorType));
     }
   },
 };
@@ -123,18 +105,17 @@ export const tokenService = {
   },
 
   isAuthenticated(): boolean {
-    const token = this.getToken();
-    return Boolean(token);
+    return Boolean(this.getToken());
   },
 };
 
 export const userService = {
-  getUser(): LoginResponse["user"] | null {
+  getUser(): User | null {
     const user = localStorage.getItem("user");
-    return user ? JSON.parse(user) : null;
+    return user ? (JSON.parse(user) as User) : null;
   },
 
-  setUser(user: LoginResponse["user"]): void {
+  setUser(user: User): void {
     localStorage.setItem("user", JSON.stringify(user));
   },
 

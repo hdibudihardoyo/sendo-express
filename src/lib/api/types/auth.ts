@@ -4,7 +4,7 @@ export interface User {
   id: number;
   fullName: string;
   email: string;
-  role: string;
+  role: string; // "customer" | "super-admin" | "courier" | "admin-branch"
   avatar?: string | null;
 }
 
@@ -38,13 +38,11 @@ export interface LoginResponseData {
   accessToken: string;
 }
 
-export type UserResponseData = Omit<LoginResponseData, "accessToken">;
-
 export interface LoginResponse {
   accessToken: string;
-  user: UserResponseData;
+  user: Omit<LoginResponseData, "accessToken">;
 }
 
 export interface RegisterResponse {
-  user: UserResponseData;
+  user: Omit<LoginResponseData, "accessToken">;
 }

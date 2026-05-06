@@ -72,7 +72,6 @@ export function ActionCell({ employee, onDataChange }: ActionCellProps) {
     defaultValues: {
       fullName: employee.user.fullName,
       email: employee.user.email,
-      phone_number: employee.user.phone_number,
       type: employee.type,
       branch_id: employee.branch_id,
       password: "",
@@ -83,7 +82,7 @@ export function ActionCell({ employee, onDataChange }: ActionCellProps) {
     try {
       setIsLoading(true);
       const requestData: UpdateEmployeeBranchRequest = {
-		name: values.fullName,
+        name: values.fullName,
         email: values.email,
         phone_number: values.phone_number,
         type: values.type || employee.type,

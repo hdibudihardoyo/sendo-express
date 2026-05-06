@@ -17,7 +17,7 @@ export default function BranchPage() {
 		(branch) =>
 			branch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
 			branch.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			branch.phone_number.includes(searchTerm)
+			branch.phoneNumber.includes(searchTerm)
 	);
 
 	return (

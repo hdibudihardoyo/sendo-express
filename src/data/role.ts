@@ -1,238 +1,205 @@
 // Role and Permission related types and mock data
-import type { Role, Permission } from "../lib/api/types/role";
+import type {
+  Role,
+  Permission,
+  UpdateRolePermissionsRequest,
+} from "../lib/api/types/role";
 
 // Mock permissions data
 export const permissions: Permission[] = [
-	{
-		id: 1,
-		name: "View Branches",
-		key: "branches.view",
-		resource: "branches",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 2,
-		name: "Create Branches",
-		key: "branches.create",
-		resource: "branches",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 3,
-		name: "Update Branches",
-		key: "branches.update",
-		resource: "branches",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 4,
-		name: "Delete Branches",
-		key: "branches.delete",
-		resource: "branches",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 5,
-		name: "View Shipments",
-		key: "shipments.view",
-		resource: "shipments",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 6,
-		name: "Create Shipments",
-		key: "shipments.create",
-		resource: "shipments",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 7,
-		name: "Update Shipments",
-		key: "shipments.update",
-		resource: "shipments",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 8,
-		name: "Cancel Shipments",
-		key: "shipments.cancel",
-		resource: "shipments",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 9,
-		name: "View Employees",
-		key: "employees.view",
-		resource: "employees",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 10,
-		name: "Create Employees",
-		key: "employees.create",
-		resource: "employees",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 11,
-		name: "Update Employees",
-		key: "employees.update",
-		resource: "employees",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 12,
-		name: "Delete Employees",
-		key: "employees.delete",
-		resource: "employees",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 13,
-		name: "View Roles",
-		key: "roles.view",
-		resource: "roles",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 14,
-		name: "Manage Permissions",
-		key: "permissions.manage",
-		resource: "permissions",
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
+  {
+    id: 1,
+    name: "Create Shipment",
+    key: "shipments.create",
+    resource: "shipments",
+  },
+  {
+    id: 2,
+    name: "Read Shipment",
+    key: "shipments.read",
+    resource: "shipments",
+  },
+  {
+    id: 3,
+    name: "Create Employee",
+    key: "employee.create",
+    resource: "employee",
+  },
+  {
+    id: 4,
+    name: "Read Employee",
+    key: "employee.read",
+    resource: "employee",
+  },
+  {
+    id: 5,
+    name: "Update Employee",
+    key: "employee.update",
+    resource: "employee",
+  },
+  {
+    id: 6,
+    name: "Delete Employee",
+    key: "employee.delete",
+    resource: "employee",
+  },
+  {
+    id: 7,
+    name: "Create Branch",
+    key: "branches.create",
+    resource: "branches",
+  },
+  {
+    id: 8,
+    name: "Read Branch",
+    key: "branches.read",
+    resource: "branches",
+  },
+  {
+    id: 9,
+    name: "Update Branch",
+    key: "branches.update",
+    resource: "branches",
+  },
+  {
+    id: 10,
+    name: "Delete Branch",
+    key: "branches.delete",
+    resource: "branches",
+  },
+  {
+    id: 11,
+    name: "Read History",
+    key: "history.read",
+    resource: "history",
+  },
+  {
+    id: 12,
+    name: "Read Delivery",
+    key: "delivery.read",
+    resource: "delivery",
+  },
+  {
+    id: 13,
+    name: "Update Delivery",
+    key: "delivery.update",
+    resource: "delivery",
+  },
+  {
+    id: 14,
+    name: "Read Shipment Branch",
+    key: "shipment-branch.read",
+    resource: "shipment-branch",
+  },
+  {
+    id: 15,
+    name: "Input Shipment Branch",
+    key: "shipment-branch.input",
+    resource: "shipment-branch",
+  },
+  {
+    id: 16,
+    name: "Read Permissions",
+    key: "permissions.read",
+    resource: "permissions",
+  },
+  {
+    id: 17,
+    name: "Manage Permissions",
+    key: "permissions.manage",
+    resource: "permissions",
+  },
+  {
+    id: 18,
+    name: "Track Packages",
+    key: "packages.track",
+    resource: "packages",
+  },
+  {
+    id: 19,
+    name: "Scan Packages",
+    key: "packages.scan",
+    resource: "packages",
+  },
 ];
+
+const RolePermissions: Permission[] = permissions.map((p) => ({
+  ...p,
+  resource: p.key.split(".")[0],
+}));
 
 // Mock roles data with assigned permissions
 export const roles: Role[] = [
-	{
-		id: 1,
-		name: "Admin",
-		key: "admin",
-		permissions: permissions,
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 2,
-		name: "Branch Manager",
-		key: "branch-manager",
-		permissions: permissions.slice(0, 8), // First 8 permissions (branches + shipments)
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 3,
-		name: "Courier",
-		key: "courier",
-		permissions: permissions.filter((p) => p.id === 5 || p.id === 7), // View and Update Shipments
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 4,
-		name: "Customer Service",
-		key: "customer-service",
-		permissions: permissions.filter((p) => p.id >= 5 && p.id <= 8), // Shipment permissions
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
-	{
-		id: 5,
-		name: "HR Manager",
-		key: "hr-manager",
-		permissions: permissions.filter((p) => p.id >= 9 && p.id <= 12), // Employee permissions
-		created_at: "2024-06-01T00:00:00Z",
-		updated_at: "2024-06-01T00:00:00Z",
-	},
+  {
+    id: 1,
+    name: "Super Admin",
+    key: "super-admin",
+    permissions: RolePermissions,
+  },
+  {
+    id: 2,
+    name: "Customer",
+    key: "customer",
+    permissions: RolePermissions.filter((p) => [2, 18].includes(p.id)),
+  },
+  {
+    id: 3,
+    name: "Courier",
+    key: "courier",
+    permissions: RolePermissions.filter((p) => [12, 13, 18, 19].includes(p.id)),
+  },
+  {
+    id: 4,
+    name: "Admin Branch",
+    key: "admin-branch",
+    permissions: RolePermissions.filter((p) =>
+      [1, 2, 7, 8, 9, 10, 14, 15].includes(p.id),
+    ),
+  },
 ];
 
 // Mock services for API integration
 export const mockRoleService = {
-	getRoles: async (): Promise<Role[]> => {
-		// Simulate API delay
-		await new Promise((resolve) => setTimeout(resolve, 500));
-		return roles;
-	},
+  getRoles: async (): Promise<Role[]> => {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    return roles;
+  },
 
-	getRoleById: async (id: number): Promise<Role | null> => {
-		// Simulate API delay
-		await new Promise((resolve) => setTimeout(resolve, 300));
-		return roles.find((role) => role.id === id) || null;
-	},
+  getRoleById: async (id: number): Promise<Role | null> => {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    return roles.find((role) => role.id === id) || null;
+  },
 
-	updateRole: async (
-		id: number,
-		data: { name?: string; permission_ids?: number[] }
-	): Promise<Role> => {
-		// Simulate API delay
-		await new Promise((resolve) => setTimeout(resolve, 800));
-		const roleIndex = roles.findIndex((role) => role.id === id);
-		if (roleIndex === -1) {
-			throw new Error("Role not found");
-		}
+  updateRolePermissions: async (
+    id: number,
+    data: UpdateRolePermissionsRequest,
+  ): Promise<Role> => {
+    await new Promise((resolve) => setTimeout(resolve, 600));
+    const roleIndex = roles.findIndex((role) => role.id === id);
+    if (roleIndex === -1) throw new Error("Role not found");
 
-		const updatedRole = { ...roles[roleIndex] };
-		if (data.name) {
-			updatedRole.name = data.name;
-		}
-		if (data.permission_ids) {
-			updatedRole.permissions = permissions.filter((p) =>
-				data.permission_ids!.includes(p.id)
-			);
-		}
-		updatedRole.updated_at = new Date().toISOString();
+    const updatedRole = { ...roles[roleIndex] };
+    updatedRole.permissions = RolePermissions.filter((p) =>
+      data.permissionIds.includes(p.id),
+    );
 
-		roles[roleIndex] = updatedRole;
-		return updatedRole;
-	},
-
-	updateRolePermissions: async (
-		id: number,
-		permissionIds: number[]
-	): Promise<Role> => {
-		// Simulate API delay
-		await new Promise((resolve) => setTimeout(resolve, 600));
-		const roleIndex = roles.findIndex((role) => role.id === id);
-		if (roleIndex === -1) {
-			throw new Error("Role not found");
-		}
-
-		const updatedRole = { ...roles[roleIndex] };
-		updatedRole.permissions = permissions.filter((p) =>
-			permissionIds.includes(p.id)
-		);
-		updatedRole.updated_at = new Date().toISOString();
-
-		roles[roleIndex] = updatedRole;
-		return updatedRole;
-	},
+    roles[roleIndex] = updatedRole;
+    return updatedRole;
+  },
 };
 
 export const mockPermissionService = {
-	getPermissions: async (): Promise<Permission[]> => {
-		// Simulate API delay
-		await new Promise((resolve) => setTimeout(resolve, 400));
-		return permissions;
-	},
+  getPermissions: async (): Promise<Permission[]> => {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    return permissions;
+  },
 
-	getPermissionById: async (id: number): Promise<Permission | null> => {
-		// Simulate API delay
-		await new Promise((resolve) => setTimeout(resolve, 200));
-		return permissions.find((permission) => permission.id === id) || null;
-	},
+  getPermissionById: async (id: number): Promise<Permission | null> => {
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    return permissions.find((permission) => permission.id === id) || null;
+  },
 };

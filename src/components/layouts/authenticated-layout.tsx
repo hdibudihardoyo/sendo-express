@@ -51,7 +51,7 @@ export default function AuthenticatedLayout() {
                         {user?.fullName || "User FullName"}
                       </span>
                       <span className="text-sm truncate">
-                        {user?.role?.name || "User Role"}
+                        {user?.role || "User Role"}
                       </span>
                     </div>
                   </div>

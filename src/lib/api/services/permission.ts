@@ -1,7 +1,7 @@
 import { apiClient } from "../axios";
 import { handleAxiosError } from "../../utils/error-handler";
 import type { AxiosErrorType } from "../../utils/api-error-types";
-import type { Permission, PermissionResponse } from "../types/role";
+import type { Permission, PermissionResponse } from "../types/permission";
 
 export const permissionService = {
   async getPermissions(): Promise<Permission[]> {

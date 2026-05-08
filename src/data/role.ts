@@ -1,12 +1,11 @@
 // Role and Permission related types and mock data
 import type {
   Role,
-  Permission,
-  UpdateRolePermissionsRequest,
+  Permissions,
+  UpdateRoleRequest,
 } from "../lib/api/types/role";
 
-// Mock permissions data
-export const permissions: Permission[] = [
+export const permissions: Permissions[] = [
   {
     id: 1,
     name: "Create Shipment",
@@ -123,12 +122,11 @@ export const permissions: Permission[] = [
   },
 ];
 
-const RolePermissions: Permission[] = permissions.map((p) => ({
+const RolePermissions: Permissions[] = permissions.map((p) => ({
   ...p,
   resource: p.key.split(".")[0],
 }));
 
-// Mock roles data with assigned permissions
 export const roles: Role[] = [
   {
     id: 1,
@@ -174,7 +172,7 @@ export const mockRoleService = {
 
   updateRolePermissions: async (
     id: number,
-    data: UpdateRolePermissionsRequest,
+    data: UpdateRoleRequest,
   ): Promise<Role> => {
     await new Promise((resolve) => setTimeout(resolve, 600));
     const roleIndex = roles.findIndex((role) => role.id === id);
@@ -191,13 +189,13 @@ export const mockRoleService = {
 };
 
 export const mockPermissionService = {
-  getPermissions: async (): Promise<Permission[]> => {
+  getPermissions: async (): Promise<Permissions[]> => {
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 400));
     return permissions;
   },
 
-  getPermissionById: async (id: number): Promise<Permission | null> => {
+  getPermissionById: async (id: number): Promise<Permissions | null> => {
     // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 200));
     return permissions.find((permission) => permission.id === id) || null;

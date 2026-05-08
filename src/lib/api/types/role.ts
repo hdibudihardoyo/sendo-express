@@ -6,23 +6,24 @@ export interface ApiMeta {
   success: boolean;
 }
 
-export interface Permission {
+export interface Permissions {
   id: number;
   name: string;
   key: string;
   resource: string;
 }
 
-export interface PermissionResponse {
-  meta: ApiMeta;
-  data: Permission[];
-}
+// Tidak Terpakai
+// export interface PermissionResponse {
+//   meta: ApiMeta;
+//   data: Permissions[];
+// }
 
 export interface Role {
   id: number;
   name: string;
   key: string;
-  permissions: Permission[];
+  permissions: Permissions[];
 }
 
 export interface RoleResponse {
@@ -35,11 +36,11 @@ export interface SingleRoleResponse {
   data: Role;
 }
 
-export interface UpdateRolePermissionsRequest {
+export interface UpdateRoleRequest {
   permissionIds: number[];
 }
 
-export interface UpdateRolePermissionsResponse {
+export interface UpdateRoleResponse {
   meta: ApiMeta;
   data: Role;
 }

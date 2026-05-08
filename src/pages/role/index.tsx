@@ -14,6 +14,7 @@ export default function RolePage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: roles, isLoading, error } = useRoles();
+  console.log(roles);
 
   const filteredRoles =
     roles?.filter(
@@ -34,7 +35,11 @@ export default function RolePage() {
       <Page title="Kelola Role 🔐👨‍💼">
         <div className="py-8 text-center">
           <div className="text-red-500">
-            <p>Terjadi kesalahan saat memuat data role</p>
+            <p>
+              {error instanceof Error
+                ? error.message
+                : "Terjadi kesalahan saat memuat data role"}
+            </p>
           </div>
         </div>
       </Page>
@@ -43,11 +48,11 @@ export default function RolePage() {
 
   return (
     <>
-      <PermissionGuard permission="permisiions.manage">
+      <PermissionGuard permission="permissions.manage">
         <Page title="Kelola Role 🔐👨‍💼">
           <Input
             type="text"
-            placeholder="Cari Role (Nama, Key, Permission)"
+            placeholder="Cari Role Berdasarkan Nama Role"
             className="mb-4 w-full max-w-md bg-white"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}

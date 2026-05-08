@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { roleService } from "@/lib/api/services/role";
 import { toast } from "react-hot-toast";
-import type { UpdateRolePermissionsRequest } from "@/lib/api/types/role";
+import type { UpdateRoleRequest } from "@/lib/api/types/role";
 
 export const useRoles = () => {
   return useQuery({
@@ -28,7 +28,7 @@ export const useUpdateRole = () => {
       data,
     }: {
       id: number;
-      data: UpdateRolePermissionsRequest;
+      data: UpdateRoleRequest;
     }) => roleService.updateRolePermissions(id, data),
     onSuccess: (updatedRole) => {
       queryClient.setQueryData(["roles", updatedRole.id], updatedRole);

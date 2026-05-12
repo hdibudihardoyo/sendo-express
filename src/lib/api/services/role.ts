@@ -3,10 +3,10 @@ import { handleAxiosError } from "../../utils/error-handler";
 import type { AxiosErrorType } from "../../utils/api-error-types";
 import type {
   Role,
-  UpdateRolePermissionsRequest,
+  UpdateRoleRequest,
   RoleResponse,
   SingleRoleResponse,
-  UpdateRolePermissionsResponse,
+  UpdateRoleResponse,
 } from "../types/role";
 
 export const roleService = {
@@ -34,10 +34,10 @@ export const roleService = {
 
   async updateRolePermissions(
     id: number,
-    data: UpdateRolePermissionsRequest,
+    data: UpdateRoleRequest,
   ): Promise<Role> {
     try {
-      const response = await apiClient.patch<UpdateRolePermissionsResponse>(
+      const response = await apiClient.patch<UpdateRoleResponse>(
         `/api/roles/${id}`,
         data,
       );

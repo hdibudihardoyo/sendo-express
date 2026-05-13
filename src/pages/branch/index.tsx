@@ -2,42 +2,58 @@ import { Page } from "@/components/ui/page";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useMeta, META_DATA } from "@/hooks/use-meta";
-import { branches } from "@/data/branch";
 
 // Components
+import { useBranches } from "@/hooks/use-branch";
 import { DataTable, columns, AddBranchModal } from "./components";
+import { PermissionGuard } from "@/components";
 
 export default function BranchPage() {
-	// Use custom meta hook
-	useMeta(META_DATA.branch);
+  // Use custom meta hook
+  useMeta(META_DATA.branch);
 
-	const [searchTerm, setSearchTerm] = useState("");
-	const [refreshKey, setRefreshKey] = useState(0);
+  const { data: branches = [], error } = useBranches();
 
-	const handleDataChange = () => setRefreshKey((prev) => prev + 1);
+  const [searchTerm, setSearchTerm] = useState("");
 
-	const filteredBranches = branches.filter(
-		(branch) =>
-			branch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			branch.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			branch.phoneNumber.includes(searchTerm)
-	);
+  const filteredBranches = branches.filter(
+    (branch) =>
+      branch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      branch.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      branch.phoneNumber.includes(searchTerm),
+  );
 
-	return (
-		<Page title="Daftar Cabang 🏢" action={<AddBranchModal />}>
-			<Input
-				type="text"
-				placeholder="Cari Cabang"
-				className="mb-4 w-full max-w-sm bg-white"
-				value={searchTerm}
-				onChange={(e) => setSearchTerm(e.target.value)}
-			/>
-			<DataTable
-				key={refreshKey}
-				data={filteredBranches}
-				columns={columns(handleDataChange)}
-				title="Semua Cabang"
-			/>
-		</Page>
-	);
+  if (error) {
+    return (
+      <Page title="Daftar Cabang 🏢">
+        <div className="text-red-500 font-semibold">
+          <p>Terjadi kesalahan = {error.message}</p>
+        </div>
+      </Page>
+    );
+  }
+
+  return (
+    <Page
+      title="Daftar Cabang 🏢"
+      action={
+        <PermissionGuard permission="branch.create">
+          <AddBranchModal />
+        </PermissionGuard>
+      }
+    >
+      <Input
+        type="text"
+        placeholder="Cari Cabang"
+        className="mb-4 w-full max-w-sm bg-white"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+      <DataTable
+        data={filteredBranches}
+        columns={columns()}
+        title="Semua Cabang"
+      />
+    </Page>
+  );
 }

@@ -20,13 +20,12 @@ import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-import toast from "react-hot-toast";
-
 import { branchSchema, type BranchFormData } from "@/lib/validations/branch";
-import type { BranchItem } from "@/data/branch";
+import { useUpdateBranch } from "@/hooks/use-branch";
+import type { Branch } from "@/lib/api/types/branch";
 
 interface EditBranchModalProps {
-  branch: BranchItem;
+  branch: Branch;
   onBranchUpdated?: () => void;
 }
 
@@ -37,27 +36,28 @@ export function EditBranchModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  const updateBranchMutation = useUpdateBranch();
+
   const form = useForm<BranchFormData>({
     resolver: zodResolver(branchSchema),
     defaultValues: {
       name: branch.name,
       address: branch.address,
-      phone_number: branch.phoneNumber,
+      phoneNumber: branch.phoneNumber,
     },
   });
 
   async function onSubmit(values: BranchFormData) {
     try {
       setIsLoading(true);
-      // TODO: Implement actual API call when backend is ready
-      console.log("Updating branch with data:", values);
-      await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate API call
-      toast.success("Cabang berhasil diperbarui!");
+      await updateBranchMutation.mutateAsync({
+        id: branch.id,
+        data: values,
+      });
       setIsOpen(false);
       onBranchUpdated?.();
     } catch (error) {
       console.error("Error updating branch:", error);
-      toast.error("Gagal memperbarui cabang. Silakan coba lagi.");
     } finally {
       setIsLoading(false);
     }
@@ -68,7 +68,7 @@ export function EditBranchModal({
     form.reset({
       name: branch.name,
       address: branch.address,
-      phone_number: branch.phoneNumber,
+      phoneNumber: branch.phoneNumber,
     });
   };
 
@@ -118,7 +118,7 @@ export function EditBranchModal({
 
             <FormField
               control={form.control}
-              name="phone_number"
+              name="phoneNumber"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Nomor Telepon</FormLabel>
@@ -139,8 +139,12 @@ export function EditBranchModal({
               >
                 Batal
               </Button>
-              <Button type="submit" variant="darkGreen" disabled={isLoading}>
-                {isLoading ? "Menyimpan..." : "Simpan"}
+              <Button
+                type="submit"
+                variant="darkGreen"
+                disabled={updateBranchMutation.isPending}
+              >
+                {updateBranchMutation.isPending ? "Menyimpan..." : "Simpan"}
               </Button>
             </DialogFooter>
           </form>

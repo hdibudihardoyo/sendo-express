@@ -1,4 +1,5 @@
 // Branch related types
+import type { ApiMeta, Pagination } from "./index";
 
 export interface CreateBranchRequest {
   name: string;
@@ -14,12 +15,13 @@ export interface Branch {
 }
 
 export interface BranchResponse {
-  message: string;
+  meta: ApiMeta;
   data: Branch[];
+  paging: Pagination;
 }
 
 export interface SingleBranchResponse {
-  message: string;
+  meta: ApiMeta;
   data: Branch;
 }
 

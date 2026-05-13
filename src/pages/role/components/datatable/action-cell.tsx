@@ -68,7 +68,6 @@ export function ActionCell({ role, onDataChange }: ActionCellProps) {
           permissionIds: values.permissionIds,
         },
       });
-      toast.success("Role berhasil diperbarui!");
       setIsEditDialogOpen(false);
       onDataChange?.();
     } catch (error) {

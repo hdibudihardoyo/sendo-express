@@ -12,6 +12,9 @@ export default function BranchPage() {
 	useMeta(META_DATA.branch);
 
 	const [searchTerm, setSearchTerm] = useState("");
+	const [refreshKey, setRefreshKey] = useState(0);
+
+	const handleDataChange = () => setRefreshKey((prev) => prev + 1);
 
 	const filteredBranches = branches.filter(
 		(branch) =>
@@ -21,21 +24,20 @@ export default function BranchPage() {
 	);
 
 	return (
-		<>
-			<Page title="Daftar Cabang 🏢" action={<AddBranchModal />}>
-				<Input
-					type="text"
-					placeholder="Cari Cabang"
-					className="mb-4 w-full max-w-sm bg-white"
-					value={searchTerm}
-					onChange={(e) => setSearchTerm(e.target.value)}
-				/>
-				<DataTable
-					data={filteredBranches}
-					columns={columns()}
-					title="Semua Cabang"
-				/>
-			</Page>
-		</>
+		<Page title="Daftar Cabang 🏢" action={<AddBranchModal />}>
+			<Input
+				type="text"
+				placeholder="Cari Cabang"
+				className="mb-4 w-full max-w-sm bg-white"
+				value={searchTerm}
+				onChange={(e) => setSearchTerm(e.target.value)}
+			/>
+			<DataTable
+				key={refreshKey}
+				data={filteredBranches}
+				columns={columns(handleDataChange)}
+				title="Semua Cabang"
+			/>
+		</Page>
 	);
 }

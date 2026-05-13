@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -176,11 +177,23 @@ export function ActionCell({ role, onDataChange }: ActionCellProps) {
                   type="button"
                   variant="secondary"
                   onClick={() => setIsEditDialogOpen(false)}
+                  disabled={updateMutation.isPending}
                 >
                   Batal
                 </Button>
-                <Button type="submit" variant="darkGreen">
-                  Simpan
+                <Button
+                  type="submit"
+                  variant="darkGreen"
+                  disabled={updateMutation.isPending}
+                >
+                  {updateMutation.isPending ? (
+                    <>
+                      <Loader2 className="animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    "Simpan"
+                  )}
                 </Button>
               </DialogFooter>
             </form>

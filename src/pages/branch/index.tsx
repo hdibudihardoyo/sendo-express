@@ -37,7 +37,7 @@ export default function BranchPage() {
     <Page
       title="Daftar Cabang 🏢"
       action={
-        <PermissionGuard permission="branch.create">
+        <PermissionGuard permission="branches.create">
           <AddBranchModal />
         </PermissionGuard>
       }

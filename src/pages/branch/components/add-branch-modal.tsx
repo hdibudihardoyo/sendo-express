@@ -66,12 +66,10 @@ export function AddBranchModal({ onBranchAdded }: AddBranchModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <PermissionGuard permission="branches.create">
-          <Button variant="darkGreen">
-            Tambah Cabang
-            <AddSquare className="ml-auto" variant="Bold" size="20" />
-          </Button>
-        </PermissionGuard>
+        <Button variant="darkGreen">
+          Tambah Cabang
+          <AddSquare className="ml-auto" variant="Bold" size="20" />
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
@@ -129,7 +127,7 @@ export function AddBranchModal({ onBranchAdded }: AddBranchModalProps) {
                 type="button"
                 variant="secondary"
                 onClick={handleCancel}
-                disabled={isLoading}
+                disabled={createBranchMutation.isPending}
               >
                 Batal
               </Button>

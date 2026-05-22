@@ -72,9 +72,9 @@ export const columns = (): ColumnDef<EmployeeBranch>[] => [
     header: "Role",
     cell: ({ row }) => {
       const role = row.original.user.role;
-      const roleLabel = role === "courier" ? "Kurir" : "Admin";
+      const roleLabel = role.key === "courier" ? "Kurir" : "Admin";
       const roleColor =
-        role === "courier"
+        role.key === "courier"
           ? "bg-blue-100 text-blue-800"
           : "bg-green-100 text-green-800";
 

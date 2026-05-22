@@ -3,9 +3,9 @@ import { roleService } from "@/lib/api/services/role";
 import { toast } from "react-hot-toast";
 import type { UpdateRoleRequest } from "@/lib/api/types/role";
 
-export const useRoles = (name: string) => {
+export const useRoles = (name?: string) => {
   return useQuery({
-    queryKey: ["roles", name],
+    queryKey: ["roles", name || "all"],
     queryFn: () => roleService.getRoles(name),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

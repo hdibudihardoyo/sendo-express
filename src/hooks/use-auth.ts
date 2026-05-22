@@ -1,8 +1,5 @@
 import type { LoginRequest, RegisterRequest } from "@/lib/api";
-import authService, {
-  tokenService,
-  userService,
-} from "@/lib/api/services/auth";
+import authService, { tokenService } from "@/lib/api/services/auth";
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -15,7 +12,7 @@ export const useAuth = () => {
     queryKey: ["user", "auth"],
     queryFn: authService.getCurrentUser,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
+    retry: false,
   });
 
   // Login mutation
@@ -23,15 +20,10 @@ export const useAuth = () => {
     mutationFn: authService.login,
 
     onSuccess: (data) => {
-      console.log("login success data", data);
       if (!data?.accessToken || !data?.user) {
         toast.error("Login gagal! Response tidak valid dari server.");
         return;
       }
-
-      tokenService.setToken(data.accessToken);
-      userService.setUser(data.user);
-
       queryClient.setQueryData(["user", "auth"], data.user);
       toast.success("Login berhasil!");
       navigate("/dashboard");
@@ -41,8 +33,6 @@ export const useAuth = () => {
       const errorMessage = error.message || "Login gagal. Silahkan coba lagi.";
       toast.error(errorMessage);
 
-      tokenService.removeToken();
-      userService.removeUser();
       queryClient.setQueryData(["user", "auth"], null);
     },
   });
@@ -51,13 +41,14 @@ export const useAuth = () => {
   const logoutMutation = useMutation({
     mutationFn: async () => {
       await authService.logout();
-      tokenService.removeToken();
-      userService.removeUser();
-      queryClient.clear();
       return true;
     },
 
     onSuccess: () => {
+      queryClient.setQueryData(["user", "auth"], null);
+      queryClient.removeQueries({ queryKey: ["permissions"] });
+      queryClient.removeQueries({ queryKey: ["roles"] });
+
       toast.success("Logout berhasil!");
       navigate("/auth/login");
     },

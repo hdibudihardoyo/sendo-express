@@ -15,6 +15,40 @@ import type {
   UpdatePasswordRequest,
 } from "../types/profile";
 
+export const tokenService = {
+  getToken(): string | null {
+    return localStorage.getItem("accessToken");
+  },
+
+  setToken(token: string): void {
+    localStorage.setItem("accessToken", token);
+  },
+
+  removeToken(): void {
+    localStorage.removeItem("accessToken");
+  },
+
+  isAuthenticated(): boolean {
+    return Boolean(this.getToken());
+  },
+};
+
+export const userService = {
+  getUser(): User | null {
+    const user = localStorage.getItem("user");
+    return user ? (JSON.parse(user) as User) : null;
+  },
+
+  setUser(user: User): void {
+    localStorage.setItem("user", JSON.stringify(user));
+  },
+
+  removeUser(): void {
+    localStorage.removeItem("user");
+  },
+};
+
+// 3. Definisikan Auth Service
 export const authService = {
   async login(request: LoginRequest): Promise<LoginResponse> {
     try {
@@ -39,12 +73,12 @@ export const authService = {
     userService.removeUser();
   },
 
-  async getCurrentUser(): Promise<User> {
+  async getCurrentUser(): Promise<User | null> {
     const token = tokenService.getToken();
-    if (!token) throw new Error("User not authenticated");
+    if (!token) return null;
 
     const user = userService.getUser();
-    if (!user) throw new Error("User not found");
+    if (!user) return null;
 
     return user;
   },
@@ -88,39 +122,6 @@ export const authService = {
     } catch (error) {
       throw new Error(handleAxiosError(error as AxiosErrorType));
     }
-  },
-};
-
-export const tokenService = {
-  getToken(): string | null {
-    return localStorage.getItem("accessToken");
-  },
-
-  setToken(token: string): void {
-    localStorage.setItem("accessToken", token);
-  },
-
-  removeToken(): void {
-    localStorage.removeItem("accessToken");
-  },
-
-  isAuthenticated(): boolean {
-    return Boolean(this.getToken());
-  },
-};
-
-export const userService = {
-  getUser(): User | null {
-    const user = localStorage.getItem("user");
-    return user ? (JSON.parse(user) as User) : null;
-  },
-
-  setUser(user: User): void {
-    localStorage.setItem("user", JSON.stringify(user));
-  },
-
-  removeUser(): void {
-    localStorage.removeItem("user");
   },
 };
 

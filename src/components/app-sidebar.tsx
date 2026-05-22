@@ -1,5 +1,4 @@
 import * as React from "react";
-
 import {
   Sidebar,
   SidebarContent,
@@ -35,7 +34,7 @@ import {
 } from "iconsax-reactjs";
 import { Link, useLocation } from "react-router";
 import { ProCard } from "./pro-card";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react"; // Tambahkan Loader2
 import { usePermission } from "../hooks/use-permission";
 import { PermissionGuard } from "./permission-guard";
 
@@ -56,7 +55,6 @@ const data = {
           title: "Dashboard",
           url: "/dashboard",
           icon: Chart2,
-          // Dashboard is accessible to all authenticated users
         },
         {
           title: "Kirim Paket",
@@ -68,10 +66,9 @@ const data = {
           title: "Lacak Paket",
           url: "/track-package",
           icon: Routing,
-          // Track package is accessible to all authenticated users
         },
         {
-          title: "Datar Pengiriman",
+          title: "Daftar Pengiriman",
           url: "/delivery",
           icon: ClipboardTick,
           permission: "delivery.read",
@@ -92,13 +89,11 @@ const data = {
           title: "Alamat Saya",
           url: "/user-addresses",
           icon: Location,
-          // User addresses is accessible to all authenticated users
         },
         {
           title: "Profile",
           url: "/profile",
           icon: User,
-          // Profile is accessible to all authenticated users
         },
       ],
     },
@@ -132,7 +127,9 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const location = useLocation();
-  const { hasPermission } = usePermission();
+  // Tambahkan isLoading di sini
+  const { hasPermission, isLoading } = usePermission();
+
   const isActive = (url: string) => {
     if (location.pathname.startsWith(url)) {
       if (url === "/") {
@@ -140,11 +137,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }
       return location.pathname.startsWith(url);
     }
-
     return false;
   };
 
   const hasAccessToMasterMenu = (items: MenuItem[]) => {
+    if (isLoading) return true;
+
     return items.some((item) => {
       if (item.permission) {
         return hasPermission(item.permission);
@@ -152,6 +150,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       return true;
     });
   };
+
   const renderMenuItem = (item: MenuItem) => {
     if (item.permission) {
       return (
@@ -248,8 +247,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <span className="font-bold text-xl">SendoExpress</span>
         </div>
       </SidebarHeader>
-      <SidebarContent className="p-6 pt-0">
-        {/* We create a SidebarGroup for each parent. */}
+      <SidebarContent className="p-6 pt-0 relative">
+        {isLoading && (
+          <div className="absolute inset-0 bg-background/50 backdrop-blur-sm flex items-center justify-center z-10">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        )}
+
         {data.navMain.map((item) => (
           <SidebarGroup key={item.title}>
             <SidebarGroupLabel>{item.title}</SidebarGroupLabel>

@@ -1,27 +1,53 @@
 // Shipment Branch Types and Interfaces
+import type { ApiMeta, Pagination } from "./index";
 
 export interface ScanShipmentRequest {
-  tracking_number: string;
+  trackingNumber: string;
   type: "IN" | "OUT";
-  is_ready_to_pickup?: boolean;
+  isReadyToPickup?: boolean;
 }
 
-export interface ShipmentBranchLog {
+export interface GetAllShipmentBranchesParams {
+  trackingNumber?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface ScannedByUser {
   id: number;
-  tracking_number: string;
+  fullName: string;
+  email: string;
+}
+
+export interface ShipmentBranch {
+  id: number;
+  createdAt: string;
+  trackingNumber: string;
   type: "IN" | "OUT";
-  branch_id: number;
-  user_id: number;
-  is_ready_to_pickup: boolean;
-  created_at: string;
+  status: string;
+  scanTime: string;
+  description: string;
+  scannedByUserId: ScannedByUser;
+}
+
+export interface ShipmentBranchSummaryData {
+  packagesInToday: number;
+  packagesOutToday: number;
+  totalActivity: number;
 }
 
 export interface ScanShipmentResponse {
-  message: string;
-  data: ShipmentBranchLog;
+  meta: ApiMeta;
+  data: ShipmentBranch;
 }
 
-export interface ShipmentBranchLogsResponse {
-  message: string;
-  data: ShipmentBranchLog[];
+export interface ShipmentBranchResponse {
+  meta: ApiMeta;
+  data: ShipmentBranch[];
+  paging: Pagination;
+}
+
+export interface ShipmentBranchSummaryResponse {
+  meta: ApiMeta;
+  data: ShipmentBranchSummaryData;
 }

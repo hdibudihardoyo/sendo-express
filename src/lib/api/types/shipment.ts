@@ -1,5 +1,5 @@
+// type definitions for shipment-related API interactions
 import type { ApiMeta, Pagination } from "./index";
-import type { ShipmentHistory } from "./history";
 
 export type PaymentStatus =
   | "PENDING"
@@ -21,6 +21,7 @@ export type DeliveryStatus =
 
 export type DeliveryType = "regular" | "next_day" | "same_day" | string;
 
+// NESTED TYPES
 export interface ShipmentUser {
   id: number;
   fullName: string;
@@ -69,6 +70,14 @@ export interface PickupAddress {
   photo: string;
 }
 
+export interface ShipmentTimelineEntry {
+  id: number;
+  createdAt: string;
+  status: string;
+  description: string;
+}
+
+// MAIN ENTITY
 export interface Shipment {
   id: number;
   createdAt: string;
@@ -79,12 +88,13 @@ export interface Shipment {
   distance: number;
   qrCodeImage: string | null;
   payment: ShipmentPayment;
-  shipmentHistories: ShipmentHistory[];
+  shipmentHistories: ShipmentTimelineEntry[];
   shipmentDetail: ShipmentDetail;
   pickupAddress: PickupAddress;
 }
 
-export interface CreateShipment {
+// REQUEST TYPES
+export interface CreateShipmentDto {
   deliveryType: string;
   destinationAddress: string;
   packageType: string;
@@ -96,17 +106,17 @@ export interface CreateShipment {
   totalWeight: number;
 }
 
-export interface GetAllShipments {
+export interface GetAllShipmentsParams {
   trackingNumber?: string;
   page?: number;
   limit?: number;
 }
 
-export interface TrackingShipment {
+export interface TrackingShipmentDto {
   trackingNumber: string;
 }
 
-// Response Types
+// RESPONSE TYPES
 export interface CreateShipmentResponse {
   meta: ApiMeta;
   data: Shipment;

@@ -5,10 +5,10 @@ import type {
   CreateShipment,
   CreateShipmentResponse,
   GeneratePdfInvoiceResponse,
-  GetAllShipments,
+  GetAllShipmentsParams,
   GetAllShipmentsResponse,
   GetOneShipmentResponse,
-  TrackingShipment,
+  TrackingShipmentRequest,
   TrackShipmentResponse,
 } from "@/lib/api/types/shipment";
 
@@ -29,7 +29,7 @@ export const shipmentService = {
   },
 
   async getAllShipments(
-    params?: GetAllShipments,
+    params?: GetAllShipmentsParams,
   ): Promise<GetAllShipmentsResponse> {
     try {
       const response = await apiClient.get<GetAllShipmentsResponse>(
@@ -58,7 +58,7 @@ export const shipmentService = {
   },
 
   async trackShipment(
-    payload: TrackingShipment,
+    payload: TrackingShipmentRequest,
   ): Promise<TrackShipmentResponse> {
     try {
       const response = await apiClient.post<TrackShipmentResponse>(

@@ -2,15 +2,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { shipmentService } from "@/lib/api/services/shipment";
 import type {
   CreateShipment,
-  GetAllShipments,
-  TrackingShipment,
+  GetAllShipmentsParams,
 } from "@/lib/api/types/shipment";
 
 // Query keys
 export const shipmentKeys = {
   all: ["shipments"] as const,
   lists: () => [...shipmentKeys.all, "list"] as const,
-  list: (params?: GetAllShipments) =>
+  list: (params?: GetAllShipmentsParams) =>
     [...shipmentKeys.lists(), params] as const,
   details: () => [...shipmentKeys.all, "detail"] as const,
   detail: (id: number) => [...shipmentKeys.details(), id] as const,
@@ -20,7 +19,7 @@ export const shipmentKeys = {
 };
 
 // Get all shipments dengan optional params (trackingNumber, page, limit)
-export const useGetAllShipments = (params?: GetAllShipments) => {
+export const useGetAllShipments = (params?: GetAllShipmentsParams) => {
   return useQuery({
     queryKey: shipmentKeys.list(params),
     queryFn: () => shipmentService.getAllShipments(params),
@@ -45,7 +44,7 @@ export const useTrackShipment = (trackingNumber: string, enabled = true) => {
   });
 };
 
-// Generated PDF Invoice 
+// Generated PDF Invoice
 export const useGeneratePdfInvoice = (shipmentId: number, enabled = true) => {
   return useQuery({
     queryKey: shipmentKeys.invoice(shipmentId),
@@ -64,13 +63,5 @@ export const useCreateShipment = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: shipmentKeys.lists() });
     },
-  });
-};
-
-// TrackingShipment mutation untuk scan resi (update status siap jemput)
-export const useTrackShipmentMutation = () => {
-  return useMutation({
-    mutationFn: (payload: TrackingShipment) =>
-      shipmentService.trackShipment(payload),
   });
 };

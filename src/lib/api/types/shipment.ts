@@ -94,7 +94,7 @@ export interface Shipment {
 }
 
 // REQUEST TYPES
-export interface CreateShipmentDto {
+export interface CreateShipment {
   deliveryType: string;
   destinationAddress: string;
   packageType: string;
@@ -112,7 +112,7 @@ export interface GetAllShipmentsParams {
   limit?: number;
 }
 
-export interface TrackingShipmentDto {
+export interface TrackingShipmentRequest {
   trackingNumber: string;
 }
 

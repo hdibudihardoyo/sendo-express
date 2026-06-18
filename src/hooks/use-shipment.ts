@@ -1,67 +1,61 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { shipmentService } from "@/lib/api/services/shipment";
+import { toast } from "react-hot-toast";
 import type {
   CreateShipment,
   GetAllShipmentsParams,
 } from "@/lib/api/types/shipment";
 
-// Query keys
-export const shipmentKeys = {
-  all: ["shipments"] as const,
-  lists: () => [...shipmentKeys.all, "list"] as const,
-  list: (params?: GetAllShipmentsParams) =>
-    [...shipmentKeys.lists(), params] as const,
-  details: () => [...shipmentKeys.all, "detail"] as const,
-  detail: (id: number) => [...shipmentKeys.details(), id] as const,
-  tracking: (trackingNumber: string) =>
-    [...shipmentKeys.all, "tracking", trackingNumber] as const,
-  invoice: (id: number) => [...shipmentKeys.all, "invoice", id] as const,
-};
-
 // Get all shipments dengan optional params (trackingNumber, page, limit)
-export const useGetAllShipments = (params?: GetAllShipmentsParams) => {
+export const useShipments = (params?: GetAllShipmentsParams) => {
   return useQuery({
-    queryKey: shipmentKeys.list(params),
+    queryKey: ["shipments", params || "all"],
     queryFn: () => shipmentService.getAllShipments(params),
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
 // Get one shipment by ID
-export const useGetOneShipment = (shipmentId: number, enabled = true) => {
+export const useShipmentById = (shipmentId: number) => {
   return useQuery({
-    queryKey: shipmentKeys.detail(shipmentId),
+    queryKey: ["shipments", shipmentId],
     queryFn: () => shipmentService.getOneShipment(shipmentId),
-    enabled: !!shipmentId && enabled,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
-// useTrackShipment untuk tracking shipment berdasarkan nomor resi (trackingNumber)
-export const useTrackShipment = (trackingNumber: string, enabled = true) => {
+// Tracking shipment berdasarkan nomor resi (trackingNumber)
+export const useTrackShipment = (trackingNumber: string) => {
   return useQuery({
-    queryKey: shipmentKeys.tracking(trackingNumber),
+    queryKey: ["shipments", "tracking", trackingNumber],
     queryFn: () => shipmentService.trackShipment({ trackingNumber }),
-    enabled: !!trackingNumber && enabled,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
-// Generated PDF Invoice
-export const useGeneratePdfInvoice = (shipmentId: number, enabled = true) => {
+// Generate PDF Invoice
+export const useGeneratePdfInvoice = (shipmentId: number) => {
   return useQuery({
-    queryKey: shipmentKeys.invoice(shipmentId),
+    queryKey: ["shipments", shipmentId, "invoice"],
     queryFn: () => shipmentService.generatePdfInvoice(shipmentId),
-    enabled: !!shipmentId && enabled,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
-// CreateShipment mutation
+// Create shipment baru
 export const useCreateShipment = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: CreateShipment) =>
-      shipmentService.createShipment(payload),
+    mutationFn: (data: CreateShipment) => shipmentService.createShipment(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: shipmentKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: ["shipments"] });
+      toast.success("Pengiriman berhasil dibuat!");
+    },
+    onError: (error: Error) => {
+      const errorMessage =
+        error.message || "Gagal membuat pengiriman. Silakan coba lagi.";
+      toast.error(errorMessage);
     },
   });
 };

@@ -3,12 +3,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,362 +16,415 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Camera, Eye } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import { ShipmentStatus, type Shipment } from "@/lib/api/types/shipment";
+import type {
+  CourierShipment,
+  CourierShipmentStatus,
+} from "@/lib/api/types/delivery";
+import {
+  usePickShipment,
+  usePickUpShipment,
+  useDeliverToBranch,
+  usePickFromBranch,
+  usePickUpFromBranch,
+  useDeliverToCustomer,
+} from "@/hooks/use-delivery";
+import { useUploadMedia } from "@/hooks/use-media";
 import Detail from "../detail";
 
-const getVariantFromStatus = (status: string) => {
-	switch (status) {
-		case ShipmentStatus.READY_TO_PICKUP:
-		case ShipmentStatus.WAITING_PICKUP:
-			return "secondary";
-		case ShipmentStatus.PICKED_UP:
-			return "warning";
-		case ShipmentStatus.IN_TRANSIT:
-			return "default";
-		case ShipmentStatus.READY_TO_DELIVER:
-		case ShipmentStatus.READY_TO_PICKUP_AT_BRANCH:
-			return "default";
-		case ShipmentStatus.ON_THE_WAY_TO_ADDRESS:
-			return "warning";
-		case ShipmentStatus.DELIVERED:
-			return "default";
-		default:
-			return "default";
-	}
+const getVariantFromStatus = (
+  status: CourierShipmentStatus,
+): "secondary" | "warning" | "default" | "destructive" | "darkGreen" => {
+  switch (status) {
+    case "READY_TO_PICKUP":
+    case "WAITING_FOR_PICKUP":
+      return "secondary";
+    case "PICKED_UP":
+      return "warning";
+    case "IN_TRANSIT":
+      return "default";
+    case "READY_TO_DELIVER":
+      return "default";
+    case "ON_THE_WAY_TO_ADDRESS":
+      return "warning";
+    case "DELIVERED":
+      return "darkGreen";
+    default:
+      return "default";
+  }
 };
 
-const formatStatus = (status: string) => {
-	switch (status) {
-		case ShipmentStatus.READY_TO_PICKUP:
-			return "Siap untuk Pickup";
-		case ShipmentStatus.WAITING_PICKUP:
-			return "Menunggu Pickup";
-		case ShipmentStatus.PICKED_UP:
-			return "Sudah Dipickup";
-		case ShipmentStatus.IN_TRANSIT:
-			return "Dalam Perjalanan";
-		case ShipmentStatus.READY_TO_DELIVER:
-			return "Siap Dikirim";
-		case ShipmentStatus.ON_THE_WAY_TO_ADDRESS:
-			return "Menuju Alamat";
-		case ShipmentStatus.READY_TO_PICKUP_AT_BRANCH:
-			return "Siap untuk Pickup di Cabang";
-		case ShipmentStatus.DELIVERED:
-			return "Terkirim";
-		default:
-			return status;
-	}
+const formatStatus = (status: CourierShipmentStatus): string => {
+  switch (status) {
+    case "READY_TO_PICKUP":
+      return "Siap untuk Pickup";
+    case "WAITING_FOR_PICKUP":
+      return "Menunggu Pickup";
+    case "PICKED_UP":
+      return "Sudah Dipickup";
+    case "IN_TRANSIT":
+      return "Dalam Perjalanan";
+    case "READY_TO_DELIVER":
+      return "Siap Dikirim";
+    case "ON_THE_WAY_TO_ADDRESS":
+      return "Menuju Alamat";
+    case "DELIVERED":
+      return "Terkirim";
+    default:
+      return status;
+  }
 };
 
 interface ActionButtonsProps {
-	shipment: Shipment;
-	onActionComplete: () => void;
+  shipment: CourierShipment;
+  onActionComplete: () => void;
 }
 
 function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
-	const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
-	const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
-	const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-	const [isLoading, setIsLoading] = useState(false);
-	const [actionType, setActionType] = useState<"pickup" | "deliver">(
-		"pickup"
-	);
-	const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isPhotoDialogOpen, setIsPhotoDialogOpen] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [actionType, setActionType] = useState<"pickup" | "deliver">("pickup");
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-	const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-		const file = event.target.files?.[0];
-		if (file) {
-			if (!file.type.startsWith("image/")) {
-				toast.error("Harap pilih file gambar");
-				return;
-			}
+  const pickShipment = usePickShipment();
+  const pickUpShipment = usePickUpShipment();
+  const deliverToBranch = useDeliverToBranch();
+  const pickFromBranch = usePickFromBranch();
+  const pickUpFromBranch = usePickUpFromBranch();
+  const deliverToCustomer = useDeliverToCustomer();
+  const uploadMedia = useUploadMedia();
 
-			if (file.size > 5 * 1024 * 1024) {
-				// 5MB limit
-				toast.error("Ukuran file maksimal 5MB");
-				return;
-			}
+  const isLoading =
+    pickShipment.isPending ||
+    pickUpShipment.isPending ||
+    deliverToBranch.isPending ||
+    pickFromBranch.isPending ||
+    pickUpFromBranch.isPending ||
+    deliverToCustomer.isPending ||
+    uploadMedia.isPending;
 
-			setSelectedPhoto(file);
-			const reader = new FileReader();
-			reader.onload = (e) => {
-				setPhotoPreview(e.target?.result as string);
-			};
-			reader.readAsDataURL(file);
-		}
-	};
+  const handlePhotoSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast.error("Harap pilih file gambar");
+        return;
+      }
 
-	const handlePhotoUpload = async () => {
-		if (!selectedPhoto || !shipment.tracking_number) {
-			toast.error("Foto belum dipilih");
-			return;
-		}
+      if (file.size > 5 * 1024 * 1024) {
+        // 5MB limit
+        toast.error("Ukuran file maksimal 5MB");
+        return;
+      }
 
-		try {
-			setIsLoading(true);
+      setSelectedPhoto(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPhotoPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-			if (actionType === "pickup") {
-				toast.success("Pickup berhasil dikonfirmasi");
-			} else {
-				toast.success("Pengiriman ke customer berhasil");
-			}
+  const resetPhotoDialog = () => {
+    setIsPhotoDialogOpen(false);
+    setSelectedPhoto(null);
+    setPhotoPreview(null);
+  };
 
-			setIsPhotoDialogOpen(false);
-			setSelectedPhoto(null);
-			setPhotoPreview(null);
-			onActionComplete();
-		} catch (error: unknown) {
-			const errorMessage =
-				error instanceof Error
-					? error.message
-					: "Gagal mengunggah foto";
-			toast.error(errorMessage);
-		} finally {
-			setIsLoading(false);
-		}
-	};
+  const handlePhotoUpload = async () => {
+    if (!selectedPhoto || !shipment.trackingNumber) {
+      toast.error("Foto belum dipilih");
+      return;
+    }
 
-	const openPhotoDialog = (type: "pickup" | "deliver") => {
-		setActionType(type);
-		setIsPhotoDialogOpen(true);
-	};
+    try {
+      const uploaded = await uploadMedia.mutateAsync(selectedPhoto);
 
-	// Determine which buttons to show based on delivery status
-	const renderActionButtons = () => {
-		if (!shipment.tracking_number) return null;
+      if (actionType === "pickup") {
+        pickUpShipment.mutate(
+          {
+            trackingNumber: shipment.trackingNumber,
+            data: { pickupProofImageUrl: uploaded.fileUrl },
+          },
+          { onSuccess: () => resetPhotoDialog() },
+        );
+      } else {
+        deliverToCustomer.mutate(
+          {
+            trackingNumber: shipment.trackingNumber,
+            data: { receiptProofImageUrl: uploaded.fileUrl },
+          },
+          { onSuccess: () => resetPhotoDialog() },
+        );
+      }
 
-		switch (shipment.delivery_status) {
-			case ShipmentStatus.READY_TO_PICKUP:
-				return (
-					<>
-						<Button
-							variant="darkGreen"
-							size="sm"
-							disabled={isLoading}
-						>
-							Pick
-						</Button>
-					</>
-				);
-			case ShipmentStatus.WAITING_PICKUP:
-				return (
-					<>
-						<Button
-							variant="darkGreen"
-							size="sm"
-							onClick={() => openPhotoDialog("pickup")}
-							disabled={isLoading}
-						>
-							<Camera className="w-4 h-4 mr-1" />
-							Konfirmasi Pickup
-						</Button>
-					</>
-				);
+      onActionComplete();
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Gagal mengunggah foto";
+      toast.error(errorMessage);
+    }
+  };
 
-			case ShipmentStatus.PICKED_UP:
-				return (
-					<Button variant="oranye" size="sm" disabled={isLoading}>
-						Kirim ke Cabang
-					</Button>
-				);
+  const openPhotoDialog = (type: "pickup" | "deliver") => {
+    setActionType(type);
+    setIsPhotoDialogOpen(true);
+  };
 
-			case ShipmentStatus.READY_TO_PICKUP_AT_BRANCH:
-				return (
-					<Button variant="secondary" size="sm" disabled={isLoading}>
-						Ambil dari Cabang
-					</Button>
-				);
+  const handlePick = () => {
+    pickShipment.mutate(shipment.trackingNumber, {
+      onSuccess: () => onActionComplete(),
+    });
+  };
 
-			case ShipmentStatus.READY_TO_DELIVER:
-				return (
-					<Button variant="default" size="sm" disabled={isLoading}>
-						Siap Kirim
-					</Button>
-				);
+  const handleDeliverToBranch = () => {
+    deliverToBranch.mutate(shipment.trackingNumber, {
+      onSuccess: () => onActionComplete(),
+    });
+  };
 
-			case ShipmentStatus.ON_THE_WAY_TO_ADDRESS:
-				return (
-					<Button
-						variant="darkGreen"
-						size="sm"
-						onClick={() => openPhotoDialog("deliver")}
-						disabled={isLoading}
-					>
-						<Camera className="w-4 h-4 mr-1" />
-						Konfirmasi Terkirim
-					</Button>
-				);
+  const handlePickFromBranch = () => {
+    pickFromBranch.mutate(shipment.trackingNumber, {
+      onSuccess: () => onActionComplete(),
+    });
+  };
 
-			case ShipmentStatus.DELIVERED:
-				return (
-					<Badge
-						variant="default"
-						className="bg-green-100 text-green-800"
-					>
-						Selesai
-					</Badge>
-				);
+  const handlePickUpFromBranch = () => {
+    pickUpFromBranch.mutate(shipment.trackingNumber, {
+      onSuccess: () => onActionComplete(),
+    });
+  };
 
-			default:
-				return null;
-		}
-	};
+  // Determine which buttons to show based on courier shipment status
+  const renderActionButtons = () => {
+    if (!shipment.trackingNumber) return null;
 
-	return (
-		<div className="flex items-center gap-2">
-			<Button
-				variant="outline"
-				size="sm"
-				onClick={() => setIsDetailOpen(true)}
-			>
-				<Eye className="w-4 h-4 mr-1" />
-				Detail Paket
-			</Button>
+    switch (shipment.status) {
+      case "READY_TO_PICKUP":
+        return (
+          <Button
+            variant="darkGreen"
+            size="sm"
+            onClick={handlePick}
+            disabled={isLoading}
+          >
+            Pick
+          </Button>
+        );
+      case "WAITING_FOR_PICKUP":
+        return (
+          <Button
+            variant="darkGreen"
+            size="sm"
+            onClick={() => openPhotoDialog("pickup")}
+            disabled={isLoading}
+          >
+            <Camera className="w-4 h-4 mr-1" />
+            Konfirmasi Pickup
+          </Button>
+        );
 
-			{renderActionButtons()}
+      case "PICKED_UP":
+        return (
+          <Button
+            variant="oranye"
+            size="sm"
+            onClick={handleDeliverToBranch}
+            disabled={isLoading}
+          >
+            Kirim ke Cabang
+          </Button>
+        );
 
-			{/* Simplified Package Detail Modal */}
-			<Detail
-				shipment={shipment}
-				isOpen={isDetailOpen}
-				onClose={() => setIsDetailOpen(false)}
-			/>
+      case "IN_TRANSIT":
+        return (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handlePickFromBranch}
+            disabled={isLoading}
+          >
+            Ambil dari Cabang
+          </Button>
+        );
 
-			{/* Photo Upload Dialog */}
-			<Dialog
-				open={isPhotoDialogOpen}
-				onOpenChange={setIsPhotoDialogOpen}
-			>
-				<DialogContent className="!max-w-sm">
-					<DialogHeader>
-						<DialogTitle>
-							{actionType === "pickup"
-								? "Konfirmasi Pickup"
-								: "Konfirmasi Pengiriman"}
-						</DialogTitle>
-						<DialogDescription>
-							{actionType === "pickup"
-								? "Unggah foto paket yang telah dipickup sebagai bukti"
-								: "Unggah foto bukti pengiriman ke customer"}
-						</DialogDescription>
-					</DialogHeader>
+      case "READY_TO_DELIVER":
+        return (
+          <Button
+            variant="default"
+            size="sm"
+            onClick={handlePickUpFromBranch}
+            disabled={isLoading}
+          >
+            Siap Kirim
+          </Button>
+        );
 
-					<div className="space-y-4">
-						<div>
-							<Label
-								htmlFor="photo"
-								className="text-sm font-medium"
-							>
-								Foto Bukti
-							</Label>
-							<Input
-								id="photo"
-								type="file"
-								accept="image/*"
-								onChange={handlePhotoSelect}
-								className="mt-2"
-							/>
-						</div>
+      case "ON_THE_WAY_TO_ADDRESS":
+        return (
+          <Button
+            variant="darkGreen"
+            size="sm"
+            onClick={() => openPhotoDialog("deliver")}
+            disabled={isLoading}
+          >
+            <Camera className="w-4 h-4 mr-1" />
+            Konfirmasi Terkirim
+          </Button>
+        );
 
-						{photoPreview && (
-							<div className="mt-4">
-								<img
-									src={photoPreview}
-									alt="Preview"
-									className="w-full h-40 object-cover rounded-lg border"
-								/>
-							</div>
-						)}
-					</div>
+      case "DELIVERED":
+        return (
+          <Badge variant="default" className="bg-green-100 text-green-800">
+            Selesai
+          </Badge>
+        );
 
-					<DialogFooter>
-						<Button
-							variant="secondary"
-							onClick={() => {
-								setIsPhotoDialogOpen(false);
-								setSelectedPhoto(null);
-								setPhotoPreview(null);
-							}}
-							disabled={isLoading}
-						>
-							Batal
-						</Button>
-						<Button
-							variant="darkGreen"
-							onClick={handlePhotoUpload}
-							disabled={!selectedPhoto || isLoading}
-						>
-							{isLoading ? "Mengunggah..." : "Upload"}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
-		</div>
-	);
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button variant="outline" size="sm" onClick={() => setIsDetailOpen(true)}>
+        <Eye className="w-4 h-4 mr-1" />
+        Detail Paket
+      </Button>
+
+      {renderActionButtons()}
+
+      {/* Simplified Package Detail Modal */}
+      <Detail
+        shipment={shipment}
+        isOpen={isDetailOpen}
+        onClose={() => setIsDetailOpen(false)}
+      />
+
+      {/* Photo Upload Dialog */}
+      <Dialog open={isPhotoDialogOpen} onOpenChange={setIsPhotoDialogOpen}>
+        <DialogContent className="!max-w-sm">
+          <DialogHeader>
+            <DialogTitle>
+              {actionType === "pickup"
+                ? "Konfirmasi Pickup"
+                : "Konfirmasi Pengiriman"}
+            </DialogTitle>
+            <DialogDescription>
+              {actionType === "pickup"
+                ? "Unggah foto paket yang telah dipickup sebagai bukti"
+                : "Unggah foto bukti pengiriman ke customer"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="photo" className="text-sm font-medium">
+                Foto Bukti
+              </Label>
+              <Input
+                id="photo"
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoSelect}
+                className="mt-2"
+              />
+            </div>
+
+            {photoPreview && (
+              <div className="mt-4">
+                <img
+                  src={photoPreview}
+                  alt="Preview"
+                  className="w-full h-40 object-cover rounded-lg border"
+                />
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="secondary"
+              onClick={resetPhotoDialog}
+              disabled={isLoading}
+            >
+              Batal
+            </Button>
+            <Button
+              variant="darkGreen"
+              onClick={handlePhotoUpload}
+              disabled={!selectedPhoto || isLoading}
+            >
+              {isLoading ? "Mengunggah..." : "Upload"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
 }
 
 export const courierColumns = (
-	onActionComplete: () => void
-): ColumnDef<Shipment>[] => [
-	{
-		accessorKey: "tracking_number",
-		header: ({ column }) => {
-			return (
-				<div className="flex items-center justify-between">
-					<span>No Resi</span>
-					<Button
-						variant="ghost"
-						onClick={() =>
-							column.toggleSorting(column.getIsSorted() === "asc")
-						}
-						className="flex items-center gap-2"
-					>
-						<ArrowUpDown className="h-4 w-4" />
-					</Button>
-				</div>
-			);
-		},
-		cell: ({ row }) => {
-			return (
-				<div className="text-sm font-medium">
-					{row.getValue("tracking_number") || "N/A"}
-				</div>
-			);
-		},
-	},
-	{
-		accessorKey: "shipment_detail.destination_address",
-		header: "Alamat Tujuan",
-		cell: ({ row }) => {
-			return (
-				<div className="text-sm max-w-xs truncate">
-					{row.original.shipment_detail?.destination_address || "N/A"}
-				</div>
-			);
-		},
-	},
-	{
-		accessorKey: "delivery_status",
-		header: "Status",
-		cell: ({ row }) => {
-			const status = row.getValue("delivery_status") as string;
-			return (
-				<Badge variant={getVariantFromStatus(status)}>
-					{formatStatus(status)}
-				</Badge>
-			);
-		},
-	},
-	{
-		id: "actions",
-		header: "Aksi",
-		cell: ({ row }) => {
-			return (
-				<ActionButtons
-					shipment={row.original}
-					onActionComplete={onActionComplete}
-				/>
-			);
-		},
-	},
+  onActionComplete: () => void,
+): ColumnDef<CourierShipment>[] => [
+  {
+    accessorKey: "trackingNumber",
+    header: ({ column }) => {
+      return (
+        <div className="flex items-center justify-between">
+          <span>No Resi</span>
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="flex items-center gap-2"
+          >
+            <ArrowUpDown className="h-4 w-4" />
+          </Button>
+        </div>
+      );
+    },
+    cell: ({ row }) => {
+      return (
+        <div className="text-sm font-medium">
+          {row.getValue("trackingNumber") || "N/A"}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "destinationAddress",
+    header: "Alamat Tujuan",
+    cell: ({ row }) => {
+      return (
+        <div className="text-sm max-w-xs truncate">
+          {row.original.destinationAddress || "N/A"}
+        </div>
+      );
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.getValue("status") as CourierShipmentStatus;
+      return (
+        <Badge variant={getVariantFromStatus(status)}>
+          {formatStatus(status)}
+        </Badge>
+      );
+    },
+  },
+  {
+    id: "actions",
+    header: "Aksi",
+    cell: ({ row }) => {
+      return (
+        <ActionButtons
+          shipment={row.original}
+          onActionComplete={onActionComplete}
+        />
+      );
+    },
+  },
 ];

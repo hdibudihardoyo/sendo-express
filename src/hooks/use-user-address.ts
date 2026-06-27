@@ -19,7 +19,7 @@ export const userAddressKeys = {
 export const useUserAddresses = () => {
   return useQuery({
     queryKey: userAddressKeys.lists(),
-    queryFn: userAddressService.getUserAddresses,
+    queryFn: userAddressService.getAllUserAddresses,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
@@ -72,7 +72,7 @@ export const useUpdateUserAddress = () => {
   });
 };
 
-// delete user address by id
+// delete user address
 export const useDeleteUserAddress = () => {
   const queryClient = useQueryClient();
   return useMutation({

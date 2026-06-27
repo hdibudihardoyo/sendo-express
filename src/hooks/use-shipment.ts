@@ -6,11 +6,25 @@ import type {
   GetAllShipmentsParams,
 } from "@/lib/api/types/shipment";
 
+export const shipmentKeys = {
+  all: ["shipments"] as const,
+  lists: () => [...shipmentKeys.all, "list"] as const,
+  list: (filters?: GetAllShipmentsParams) =>
+    [...shipmentKeys.lists(), filters] as const,
+  details: () => [...shipmentKeys.all, "detail"] as const,
+  detail: (shipmentId: number) =>
+    [...shipmentKeys.details(), shipmentId] as const,
+  tracking: (trackingNumber: string) =>
+    [...shipmentKeys.all, "tracking", trackingNumber] as const,
+  invoice: (shipmentId: number) =>
+    [...shipmentKeys.detail(shipmentId), "invoice"] as const,
+};
+
 // Get all shipments dengan optional params (trackingNumber, page, limit)
-export const useShipments = (params?: GetAllShipmentsParams) => {
+export const useShipments = (filters?: GetAllShipmentsParams) => {
   return useQuery({
-    queryKey: ["shipments", params || "all"],
-    queryFn: () => shipmentService.getAllShipments(params),
+    queryKey: shipmentKeys.list(filters),
+    queryFn: () => shipmentService.getAllShipments(filters),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
@@ -18,39 +32,58 @@ export const useShipments = (params?: GetAllShipmentsParams) => {
 // Get one shipment by ID
 export const useShipmentById = (shipmentId: number) => {
   return useQuery({
-    queryKey: ["shipments", shipmentId],
-    queryFn: () => shipmentService.getOneShipment(shipmentId),
+    queryKey: shipmentKeys.detail(shipmentId),
+    queryFn: () => shipmentService.getByIdShipment(shipmentId),
+    enabled: !!shipmentId,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
 // Tracking shipment berdasarkan nomor resi (trackingNumber)
-export const useTrackShipment = (trackingNumber: string) => {
-  return useQuery({
-    queryKey: ["shipments", "tracking", trackingNumber],
-    queryFn: () => shipmentService.trackShipment({ trackingNumber }),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+export const useTrackShipment = () => {
+  return useMutation({
+    mutationFn: (data: { trackingNumber: string }) =>
+      shipmentService.trackShipment(data),
+    onError: (error: Error) => {
+      const errorMessage =
+        error.message || "Gagal melacak pengiriman. Silakan coba lagi.";
+      toast.error(errorMessage);
+    },
   });
 };
 
 // Generate PDF Invoice
-export const useGeneratePdfInvoice = (shipmentId: number) => {
-  return useQuery({
-    queryKey: ["shipments", shipmentId, "invoice"],
-    queryFn: () => shipmentService.generatePdfInvoice(shipmentId),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+export const useGeneratePdfInvoice = () => {
+  return useMutation({
+    mutationFn: (shipmentId: number) =>
+      shipmentService.generatePdfInvoice(shipmentId),
+    onSuccess: (blob, shipmentId) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `invoice-${shipmentId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF berhasil diunduh!");
+    },
+    onError: (error: Error) => {
+      const errorMessage =
+        error.message || "Gagal mengunduh PDF. Silakan coba lagi.";
+      toast.error(errorMessage);
+    },
   });
 };
 
-// Create shipment baru
+// Create shipment
 export const useCreateShipment = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: (data: CreateShipment) => shipmentService.createShipment(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["shipments"] });
       toast.success("Pengiriman berhasil dibuat!");
+      queryClient.invalidateQueries({ queryKey: shipmentKeys.lists() });
     },
     onError: (error: Error) => {
       const errorMessage =

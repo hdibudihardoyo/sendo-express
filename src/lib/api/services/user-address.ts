@@ -12,7 +12,7 @@ import type {
 
 export const userAddressService = {
   // get all user addresses
-  async getUserAddresses(): Promise<UserAddress[]> {
+  async getAllUserAddresses(): Promise<UserAddress[]> {
     try {
       const response = await apiClient.get<UserAddressResponse>(
         "/api/user-addresses",

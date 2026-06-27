@@ -14,6 +14,7 @@ export const useUpdateProfile = () => {
       queryClient.setQueryData(["user", "auth"], data);
       toast.success("Profile berhasil diperbarui!");
     },
+
     onError: (error: Error) => {
       const errorMessage =
         error.message || "Gagal memperbarui profile. Silakan coba lagi.";

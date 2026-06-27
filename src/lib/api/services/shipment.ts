@@ -3,34 +3,32 @@ import { handleAxiosError } from "../../utils/error-handler";
 import type { AxiosErrorType } from "../../utils/api-error-types";
 import type {
   CreateShipment,
-  CreateShipmentResponse,
-  GeneratePdfInvoiceResponse,
   GetAllShipmentsParams,
   GetAllShipmentsResponse,
   GetOneShipmentResponse,
+  CreateShipmentResponse,
   TrackingShipmentRequest,
   TrackShipmentResponse,
+  Shipment,
 } from "@/lib/api/types/shipment";
 
 export const shipmentService = {
-  async createShipment(
-    payload: CreateShipment,
-  ): Promise<CreateShipmentResponse> {
+  // create shipment
+  async createShipment(data: CreateShipment): Promise<Shipment> {
     try {
       const response = await apiClient.post<CreateShipmentResponse>(
         "/api/shipments",
-        payload,
+        data,
       );
-      return response.data;
+      return response.data.data;
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);
     }
   },
 
-  async getAllShipments(
-    params?: GetAllShipmentsParams,
-  ): Promise<GetAllShipmentsResponse> {
+  // get all shipments
+  async getAllShipments(params?: GetAllShipmentsParams): Promise<Shipment[]> {
     try {
       const response = await apiClient.get<GetAllShipmentsResponse>(
         "/api/shipments",
@@ -38,48 +36,45 @@ export const shipmentService = {
           params,
         },
       );
-      return response.data;
+      return response.data.data;
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);
     }
   },
 
-  async getOneShipment(shipmentId: number): Promise<GetOneShipmentResponse> {
+  // get shipment by ID
+  async getByIdShipment(shipmentId: number): Promise<Shipment> {
     try {
       const response = await apiClient.get<GetOneShipmentResponse>(
         `/api/shipments/${shipmentId}`,
       );
-      return response.data;
+      return response.data.data;
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);
     }
   },
 
-  async trackShipment(
-    payload: TrackingShipmentRequest,
-  ): Promise<TrackShipmentResponse> {
+  async trackShipment(data: TrackingShipmentRequest): Promise<Shipment> {
     try {
       const response = await apiClient.post<TrackShipmentResponse>(
         "/api/shipments/trackings",
-        payload,
+        data,
       );
-      return response.data;
+      return response.data.data;
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);
     }
   },
 
-  async generatePdfInvoice(
-    shipmentId: number,
-  ): Promise<GeneratePdfInvoiceResponse> {
+  async generatePdfInvoice(shipmentId: number): Promise<Blob> {
     try {
-      const response = await apiClient.get<GeneratePdfInvoiceResponse>(
-        `/api/shipments/${shipmentId}/pdf`,
-      );
-      return response.data;
+      const response = await apiClient.get(`/api/shipments/${shipmentId}/pdf`, {
+        responseType: "blob",
+      });
+      return response.data as Blob;
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);

@@ -270,7 +270,7 @@ export default function AddUserAddressPage() {
                   </div>
                 )}
 
-                <input
+                <Input
                   type="file"
                   ref={fileInputRef}
                   accept="image/*"

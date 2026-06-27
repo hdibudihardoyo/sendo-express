@@ -53,7 +53,6 @@ export default function EditUserAddressPage() {
   useMeta(META_DATA["user-addresses-edit"]);
   const navigate = useNavigate();
   const { id: addressId } = useParams();
-
   const userAddressId =
     addressId && !isNaN(parseInt(addressId)) ? parseInt(addressId) : null;
 
@@ -68,10 +67,8 @@ export default function EditUserAddressPage() {
   const removeMediaMutation = useRemoveMedia();
 
   const [photoPreview, setPhotoPreview] = useState<string>("");
-  const [uploadedPhotoUrl, setUploadedPhotoUrl] = useState<string | null>(null);
   const [uploadedPublicId, setUploadedPublicId] = useState<string | null>(null);
   const [originalPhotoUrl, setOriginalPhotoUrl] = useState<string>("");
-
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -106,13 +103,13 @@ export default function EditUserAddressPage() {
 
   useEffect(() => {
     if (userAddress) {
+      const existingPhoto = userAddress.photo ?? "";
       reset({
         address: userAddress.address,
         tag: userAddress.tag ?? "",
         label: userAddress.label ?? "",
-        photo: "",
+        photo: existingPhoto,
       });
-      const existingPhoto = userAddress.photo ?? "";
       setPhotoPreview(existingPhoto);
       setOriginalPhotoUrl(existingPhoto);
     }
@@ -120,9 +117,8 @@ export default function EditUserAddressPage() {
 
   const resetPhotoToOriginal = () => {
     setPhotoPreview(originalPhotoUrl);
-    setUploadedPhotoUrl(null);
     setUploadedPublicId(null);
-    setValue("photo", "");
+    setValue("photo", originalPhotoUrl);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -131,7 +127,6 @@ export default function EditUserAddressPage() {
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     if (!file.type.startsWith("image/")) {
       toast.error("File yang dipilih harus berupa gambar.");
       return;
@@ -140,46 +135,32 @@ export default function EditUserAddressPage() {
       toast.error("Ukuran gambar tidak boleh lebih dari 5MB.");
       return;
     }
-
-    // Jika sebelumnya sudah upload foto baru (bukan foto original), hapus dulu
     if (uploadedPublicId) {
       try {
         await removeMediaMutation.mutateAsync(uploadedPublicId);
         setUploadedPublicId(null);
-        setUploadedPhotoUrl(null);
       } catch {
         // lanjutkan meski gagal hapus
       }
     }
-
-    // Preview lokal segera
     const reader = new FileReader();
     reader.onload = (e) => setPhotoPreview(e.target?.result as string);
     reader.readAsDataURL(file);
-
     try {
       const result = await uploadMediaMutation.mutateAsync(file);
-      setUploadedPhotoUrl(result.fileUrl);
       setUploadedPublicId(result.publicId);
       setValue("photo", result.fileUrl);
-      toast.success("Gambar berhasil diunggah!");
     } catch {
       resetPhotoToOriginal();
     }
   };
 
   const handleRemovePhoto = () => {
-    const isUploading = uploadMediaMutation.isPending;
-    const isRemoving = removeMediaMutation.isPending;
     if (isUploading || isRemoving) return;
-
     if (uploadedPublicId) {
       removeMediaMutation.mutate(uploadedPublicId, {
         onSuccess: () => resetPhotoToOriginal(),
       });
-    } else if (photoPreview === originalPhotoUrl && originalPhotoUrl) {
-      setPhotoPreview("");
-      setValue("photo", "REMOVE");
     } else {
       setPhotoPreview("");
       setValue("photo", "");
@@ -188,20 +169,14 @@ export default function EditUserAddressPage() {
 
   const onSubmit = (data: UpdateUserAddressFormData) => {
     if (!userAddressId) return;
-
     const payload: Record<string, unknown> = {};
-
     if (data.address?.trim()) payload.address = data.address.trim();
     if (data.tag?.trim()) payload.tag = data.tag.trim();
     if (data.label?.trim()) payload.label = data.label.trim();
-
-    if (uploadedPhotoUrl) {
-      payload.photo = uploadedPhotoUrl;
-    } else if (data.photo === "REMOVE") {
-      payload.photo = null;
+    // Foto: kirim hanya jika berubah dari original (termasuk dikosongkan)
+    if (data.photo !== originalPhotoUrl) {
+      payload.photo = data.photo ?? "";
     }
-    // else: tidak ada perubahan foto, field photo tidak dikirim sama sekali
-
     updateUserAddressMutation.mutate(
       { id: userAddressId, data: payload },
       { onSuccess: () => navigate("/user-addresses") },
@@ -267,7 +242,6 @@ export default function EditUserAddressPage() {
                   </p>
                 )}
               </div>
-
               <div className="space-y-2">
                 <Label
                   htmlFor="tag"
@@ -285,7 +259,6 @@ export default function EditUserAddressPage() {
                   <p className="text-sm text-red-600">{errors.tag.message}</p>
                 )}
               </div>
-
               <div className="space-y-2">
                 <Label
                   htmlFor="label"
@@ -303,9 +276,7 @@ export default function EditUserAddressPage() {
                   <p className="text-sm text-red-600">{errors.label.message}</p>
                 )}
               </div>
-
               <input type="hidden" {...register("photo")} />
-
               <div className="pt-4">
                 <Button
                   variant="darkGreen"
@@ -319,14 +290,12 @@ export default function EditUserAddressPage() {
                 </Button>
               </div>
             </div>
-
             {/* Right: Gambar Patokan */}
             <div className="flex flex-col justify-center space-y-4">
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-gray-700">
                   Gambar Patokan
                 </Label>
-
                 {photoPreview ? (
                   <div className="relative">
                     <img
@@ -369,15 +338,13 @@ export default function EditUserAddressPage() {
                     </div>
                   </div>
                 )}
-
-                <input
+                <Input
                   type="file"
                   ref={fileInputRef}
                   accept="image/*"
                   onChange={handlePhotoSelect}
                   className="hidden"
                 />
-
                 <Button
                   type="button"
                   variant="outline"

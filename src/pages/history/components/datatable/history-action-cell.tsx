@@ -1,24 +1,23 @@
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "react-router";
-import type { Shipment } from "@/lib/api/types/shipment";
+import type { History } from "@/lib/api/types/history";
 
 interface HistoryActionCellProps {
-	shipment: Shipment;
-	onDataChange?: () => void;
+  history: History;
 }
 
-export function HistoryActionCell({ shipment }: HistoryActionCellProps) {
-	return (
-		<div className="flex items-center gap-2">
-			<Link
-				to={`/history/detail/${shipment.id}`}
-				className={buttonVariants({
-					variant: "darkGreen",
-					size: "sm",
-				})}
-			>
-				Detail
-			</Link>
-		</div>
-	);
+export function HistoryActionCell({ history }: HistoryActionCellProps) {
+  return (
+    <div className="flex items-center gap-2">
+      <Link
+        to={`/history/detail/${history.id}`}
+        className={buttonVariants({
+          variant: "darkGreen",
+          size: "sm",
+        })}
+      >
+        Detail
+      </Link>
+    </div>
+  );
 }

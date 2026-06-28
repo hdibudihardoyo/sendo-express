@@ -1,24 +1,26 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { shipmentBranchService } from "@/lib/api/services/shipment-branches";
+import { shipmentBranchService } from "@/lib/api/services/shipment-branch";
 import type {
-  GetAllShipmentBranchesParams,
+  ShipmentBranchParams,
   ScanShipmentRequest,
 } from "@/lib/api/types/shipment-branch";
+import { toast } from "react-hot-toast";
 
 export const shipmentBranchKeys = {
   all: ["shipment-branches"] as const,
   lists: () => [...shipmentBranchKeys.all, "list"] as const,
-  list: (params?: GetAllShipmentBranchesParams) =>
+  list: (params?: ShipmentBranchParams) =>
     [...shipmentBranchKeys.lists(), params] as const,
+  details: () => [...shipmentBranchKeys.all, "detail"] as const,
+  detail: (id: number) => [...shipmentBranchKeys.details(), id] as const,
   summary: () => [...shipmentBranchKeys.all, "summary"] as const,
 };
 
-export const useGetAllShipmentBranches = (
-  params?: GetAllShipmentBranchesParams,
-) => {
+export const useGetAllShipmentBranch = (params?: ShipmentBranchParams) => {
   return useQuery({
     queryKey: shipmentBranchKeys.list(params),
-    queryFn: () => shipmentBranchService.getAllShipmentBranches(params),
+    queryFn: () => shipmentBranchService.getAllShipmentBranch(params),
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
@@ -29,15 +31,15 @@ export const useGetShipmentBranchSummary = () => {
   });
 };
 
-export const useScanShipment = () => {
+export const useScanShipmentBranch = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: ScanShipmentRequest) =>
-      shipmentBranchService.scanShipment(payload),
+    mutationFn: (data: ScanShipmentRequest) =>
+      shipmentBranchService.scanShipment(data),
     onSuccess: () => {
+      toast.success("Paket berhasil discan!");
       queryClient.invalidateQueries({ queryKey: shipmentBranchKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: shipmentBranchKeys.summary() });
     },
   });
 };

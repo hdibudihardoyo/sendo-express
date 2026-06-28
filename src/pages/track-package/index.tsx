@@ -314,12 +314,18 @@ const Index = () => {
                         {getStatusIcon(
                           history.status as
                             | "READY_TO_PICKUP"
+                            | "WAITING_FOR_PICKUP"
                             | "PICKED_UP"
-                            | "ON_TRANSIT"
+                            | "IN_TRANSIT"
                             | "ARRIVED_AT_BRANCH"
-                            | "OUT_FOR_DELIVERY"
+                            | "DEPARTED_FROM_BRANCH"
+                            | "READY_TO_PICKUP_AT_BRANCH"
                             | "DELIVERED"
-                            | "FAILED_DELIVERY"
+                            | "COMPLETED"
+                            | "ON_THE_WAY"
+                            | "ON_THE_WAY_TO_ADDRESS"
+                            | "READY_TO_DELIVER"
+                            | "AT_BRANCH"
                             | null,
                         )}
                       </div>

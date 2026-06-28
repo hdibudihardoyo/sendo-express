@@ -1,4 +1,3 @@
-// Shipment Branch Types and Interfaces
 import type { ApiMeta, Pagination } from "./index";
 
 export interface ScanShipmentRequest {
@@ -7,7 +6,7 @@ export interface ScanShipmentRequest {
   isReadyToPickup?: boolean;
 }
 
-export interface GetAllShipmentBranchesParams {
+export interface ShipmentBranchParams {
   trackingNumber?: string;
   page?: number;
   limit?: number;
@@ -27,7 +26,7 @@ export interface ShipmentBranch {
   status: string;
   scanTime: string;
   description: string;
-  scannedByUserId: ScannedByUser;
+  ScannedByUser: ScannedByUser;
 }
 
 export interface ShipmentBranchSummaryData {

@@ -2,21 +2,20 @@ import { apiClient } from "../axios";
 import { handleAxiosError } from "../../utils/error-handler";
 import type { AxiosErrorType } from "../../utils/api-error-types";
 import type {
-  GetAllShipmentBranchesParams,
+  ShipmentBranchParams,
   ScanShipmentRequest,
   ScanShipmentResponse,
   ShipmentBranchResponse,
   ShipmentBranchSummaryResponse,
+  ShipmentBranchSummaryData,
 } from "../types/shipment-branch";
 
 export const shipmentBranchService = {
-  async scanShipment(
-    payload: ScanShipmentRequest,
-  ): Promise<ScanShipmentResponse> {
+  async scanShipment(data: ScanShipmentRequest): Promise<ScanShipmentResponse> {
     try {
       const response = await apiClient.post<ScanShipmentResponse>(
         "/api/shipments/branches",
-        payload,
+        data,
       );
       return response.data;
     } catch (error) {
@@ -25,8 +24,8 @@ export const shipmentBranchService = {
     }
   },
 
-  async getAllShipmentBranches(
-    params?: GetAllShipmentBranchesParams,
+  async getAllShipmentBranch(
+    params?: ShipmentBranchParams,
   ): Promise<ShipmentBranchResponse> {
     try {
       const response = await apiClient.get<ShipmentBranchResponse>(
@@ -41,12 +40,12 @@ export const shipmentBranchService = {
   },
 
   // Summary Data Shipment Branch
-  async getShipmentBranchSummary(): Promise<ShipmentBranchSummaryResponse> {
+  async getShipmentBranchSummary(): Promise<ShipmentBranchSummaryData> {
     try {
       const response = await apiClient.get<ShipmentBranchSummaryResponse>(
         "/api/shipments/branches/summary",
       );
-      return response.data;
+      return response.data.data;
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);

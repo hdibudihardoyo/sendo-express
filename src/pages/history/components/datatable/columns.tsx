@@ -3,53 +3,26 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { type ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
-import type { ShipmentHistoryItem } from "@/lib/api/types/history";
 import { HistoryActionCell } from "./history-action-cell";
+import type { History } from "@/lib/api/types/history";
+import type { DeliveryStatus } from "@/lib/api/types/shipment";
+import {
+  getStatusBadgeVariant,
+  getStatusLabel,
+} from "@/lib/utils/status-utils";
 
-const getVariantFromStatus = (status: string) => {
-  switch (status.toLowerCase()) {
-    case "picked_up":
-    case "in_transit":
-    case "on_the_way":
-    case "departed_from_branch":
-    case "ready_to_pickup":
-      return "default";
-    case "waiting_pickup":
-    case "pending":
-      return "secondary";
-    case "arrived_at_branch":
-    case "at_branch":
-      return "outline";
-    case "delivered":
-    case "completed":
-      return "darkGreen";
-    case "failed":
-      return "destructive";
-    default:
-      return "default";
-  }
-};
-
-const formatStatus = (status: string) =>
-  status
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (l) => l.toUpperCase());
-
-export const columns: ColumnDef<ShipmentHistoryItem>[] = [
+export const columns: ColumnDef<History>[] = [
   {
     accessorKey: "trackingNumber",
     header: ({ column }) => {
       const isSorted = column.getIsSorted();
       const isAsc = isSorted === "asc";
       const isDesc = isSorted === "desc";
-
       const handleSort = () => {
         if (!isSorted) column.toggleSorting(false);
         else if (isAsc) column.toggleSorting(true);
         else column.clearSorting();
       };
-
       return (
         <div className="flex items-center justify-between">
           <span>No Resi</span>
@@ -91,13 +64,13 @@ export const columns: ColumnDef<ShipmentHistoryItem>[] = [
     },
   },
   {
-    accessorKey: "status",
+    accessorKey: "deliveryStatus",
     header: "Status",
     cell: ({ row }) => {
-      const status = (row.getValue("status") as string) || "pending";
+      const status = row.getValue("status") as DeliveryStatus;
       return (
-        <Badge variant={getVariantFromStatus(status)}>
-          {formatStatus(status)}
+        <Badge variant={getStatusBadgeVariant(status)}>
+          {getStatusLabel(status)}
         </Badge>
       );
     },
@@ -105,6 +78,6 @@ export const columns: ColumnDef<ShipmentHistoryItem>[] = [
   {
     accessorKey: "action",
     header: "Action",
-    cell: ({ row }) => <HistoryActionCell shipment={row.original} />,
+    cell: ({ row }) => <HistoryActionCell history={row.original} />,
   },
 ];

@@ -1,8 +1,22 @@
 "use client";
 
-import { type ColumnDef, flexRender, getCoreRowModel, getSortedRowModel, type SortingState, useReactTable } from "@tanstack/react-table";
+import {
+  type ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  type SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
 
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import * as React from "react";
 
 interface DataTableProps<TData, TValue> {
@@ -11,7 +25,11 @@ interface DataTableProps<TData, TValue> {
   title?: string;
 }
 
-export function DataTable<TData, TValue>({ columns, data, title }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({
+  columns,
+  data,
+  title,
+}: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const table = useReactTable({
     data,
@@ -34,7 +52,12 @@ export function DataTable<TData, TValue>({ columns, data, title }: DataTableProp
               {headerGroup.headers.map((header) => {
                 return (
                   <TableHead className="font-medium text-sm" key={header.id}>
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 );
               })}
@@ -44,7 +67,10 @@ export function DataTable<TData, TValue>({ columns, data, title }: DataTableProp
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell className="font-medium text-xs" key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

@@ -1,39 +1,29 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  getAllShipmentHistories,
-  getOneShipmentHistory,
-} from "@/lib/api/services/history";
-import type { GetAllShipmentHistoriesParams } from "@/lib/api/types/history";
+import { getAllHistory, getByIdHistory } from "@/lib/api/services/history";
+import type { HistoryParams } from "@/lib/api/types/history";
 
-// ─────────────────────────────────────────────
 // QUERY KEYS
-// ─────────────────────────────────────────────
-export const shipmentHistoryKeys = {
-  all: ["shipment-histories"] as const,
-  lists: () => [...shipmentHistoryKeys.all, "list"] as const,
-  list: (params?: GetAllShipmentHistoriesParams) =>
-    [...shipmentHistoryKeys.lists(), params] as const,
-  details: () => [...shipmentHistoryKeys.all, "detail"] as const,
+export const historyKeys = {
+  all: ["history"] as const,
+  lists: () => [...historyKeys.all, "list"] as const,
+  list: (params?: HistoryParams) => [...historyKeys.lists(), params] as const,
+  details: () => [...historyKeys.all, "detail"] as const,
   detail: (shipmentId: number) =>
-    [...shipmentHistoryKeys.details(), shipmentId] as const,
+    [...historyKeys.details(), shipmentId] as const,
 };
 
-export const useGetAllShipmentHistories = (
-  params?: GetAllShipmentHistoriesParams,
-) => {
+export const useGetAllHistory = (params?: HistoryParams) => {
   return useQuery({
-    queryKey: shipmentHistoryKeys.list(params),
-    queryFn: () => getAllShipmentHistories(params),
+    queryKey: historyKeys.list(params),
+    queryFn: () => getAllHistory(params),
   });
 };
 
-export const useGetOneShipmentHistory = (
-  shipmentId: number,
-  enabled = true,
-) => {
+export const useHistoryById = (shipmentId: number) => {
   return useQuery({
-    queryKey: shipmentHistoryKeys.detail(shipmentId),
-    queryFn: () => getOneShipmentHistory(shipmentId),
-    enabled: !!shipmentId && enabled,
+    queryKey: historyKeys.detail(shipmentId),
+    queryFn: () => getByIdHistory(shipmentId),
+    enabled: !!shipmentId,
+    staleTime: 5 * 60 * 1000,
   });
 };

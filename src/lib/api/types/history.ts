@@ -1,6 +1,7 @@
 import type { ApiMeta, Pagination } from "./index";
+import type { Shipment } from "./shipment";
 
-export interface ShipmentHistory {
+export interface History {
   id: number;
   createdAt: string;
   trackingNumber: string;
@@ -8,19 +9,19 @@ export interface ShipmentHistory {
   status: string;
 }
 
-export interface GetAllShipmentHistoriesParams {
+export interface HistoryParams {
   trackingNumber?: string;
   page?: number;
   limit?: number;
 }
 
-export interface GetAllShipmentHistoriesResponse {
+export interface HistoryResponse {
   meta: ApiMeta;
-  data: ShipmentHistory[];
+  data: History[];
   paging: Pagination;
 }
 
-export interface GetOneShipmentHistoryResponse {
+export interface SingleHistoryResponse {
   meta: ApiMeta;
-  data: ShipmentHistory;
+  data: Shipment;
 }

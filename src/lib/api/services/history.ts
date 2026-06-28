@@ -2,16 +2,16 @@ import { apiClient } from "../axios";
 import { handleAxiosError } from "../../utils/error-handler";
 import type { AxiosErrorType } from "../../utils/api-error-types";
 import type {
-  GetAllShipmentHistoriesParams,
-  GetAllShipmentHistoriesResponse,
-  GetOneShipmentHistoryResponse,
+  HistoryParams,
+  HistoryResponse,
+  SingleHistoryResponse,
 } from "@/lib/api/types/history";
 
-export const getAllShipmentHistories = async (
-  params?: GetAllShipmentHistoriesParams,
-): Promise<GetAllShipmentHistoriesResponse> => {
+export const getAllHistory = async (
+  params?: HistoryParams,
+): Promise<HistoryResponse> => {
   try {
-    const { data } = await apiClient.get<GetAllShipmentHistoriesResponse>(
+    const { data } = await apiClient.get<HistoryResponse>(
       "/api/shipments/histories",
       { params },
     );
@@ -21,11 +21,11 @@ export const getAllShipmentHistories = async (
   }
 };
 
-export const getOneShipmentHistory = async (
+export const getByIdHistory = async (
   shipmentId: number,
-): Promise<GetOneShipmentHistoryResponse> => {
+): Promise<SingleHistoryResponse> => {
   try {
-    const { data } = await apiClient.get<GetOneShipmentHistoryResponse>(
+    const { data } = await apiClient.get<SingleHistoryResponse>(
       `/api/shipments/histories/${shipmentId}`,
     );
     return data;

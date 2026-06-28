@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Page, type PageBreadcrumbItem } from "@/components/ui/page";
 import {
   Box,
-  BoxTick,
   CallIncoming,
   CallOutgoing,
   CardPos,
+  CloseCircle,
   Gps,
   I3DCubeScan,
   Location,
@@ -15,24 +15,25 @@ import {
   Timer,
   TruckTime,
   User,
-  CloseCircle,
 } from "iconsax-reactjs";
 import { Slash } from "lucide-react";
 import { useParams, useNavigate } from "react-router";
 import { useMeta, META_DATA } from "@/hooks/use-meta";
-import { useGetOneShipmentHistory } from "@/hooks/use-history";
+import { useHistoryById } from "@/hooks/use-history";
+import {
+  getStatusBadgeVariant,
+  getStatusLabel,
+  getStatusIcon,
+} from "@/lib/utils/status-utils";
+import type { DeliveryStatus } from "@/lib/api/types/shipment";
 
 const DetailHistoryPage = () => {
   useMeta(META_DATA["history-detail"]);
   const { id } = useParams();
   const navigate = useNavigate();
-
   const shipmentId = id ? parseInt(id) : 0;
 
-  const { data, isLoading, isError } = useGetOneShipmentHistory(
-    shipmentId,
-    !!shipmentId,
-  );
+  const { data, isLoading, isError } = useHistoryById(shipmentId);
 
   const shipment = data?.data ?? null;
 
@@ -40,76 +41,6 @@ const DetailHistoryPage = () => {
     { label: "Riwayat Pengiriman", href: "/history" },
     { label: "Detail Pengiriman", href: `/history/detail/${id}` },
   ];
-
-  const getStatusIcon = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "pending":
-      case "waiting_pickup":
-        return <Timer size={20} variant="Bold" />;
-      case "picked_up":
-      case "in_transit":
-      case "on_the_way":
-      case "on_the_way_to_address":
-      case "departed_from_branch":
-      case "ready_to_pickup":
-        return <TruckTime size={20} variant="Bold" />;
-      case "arrived_at_branch":
-      case "at_branch":
-        return <Location size={20} variant="Bold" />;
-      case "delivered":
-      case "completed":
-        return <BoxTick size={20} variant="Bold" />;
-      case "failed":
-        return <CloseCircle size={20} variant="Bold" />;
-      default:
-        return <Timer size={20} variant="Bold" />;
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    const map: Record<string, string> = {
-      pending: "Menunggu Konfirmasi",
-      waiting_pickup: "Menunggu Dijemput",
-      ready_to_pickup: "Siap Dijemput",
-      picked_up: "Sudah Dijemput",
-      in_transit: "Dalam Perjalanan",
-      arrived_at_branch: "Tiba di Cabang",
-      at_branch: "Di Cabang",
-      departed_from_branch: "Berangkat dari Cabang",
-      on_the_way: "Menuju Cabang Tujuan",
-      on_the_way_to_address: "Menuju Alamat Tujuan",
-      ready_to_deliver: "Siap Dikirim",
-      delivered: "Terkirim",
-      completed: "Selesai",
-      failed: "Gagal",
-    };
-    return map[status.toLowerCase()] ?? status;
-  };
-
-  const getStatusBadgeVariant = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "pending":
-      case "waiting_pickup":
-        return "secondary";
-      case "picked_up":
-      case "in_transit":
-      case "on_the_way":
-      case "on_the_way_to_address":
-      case "departed_from_branch":
-      case "ready_to_pickup":
-        return "default";
-      case "arrived_at_branch":
-      case "at_branch":
-        return "outline";
-      case "delivered":
-      case "completed":
-        return "darkGreen";
-      case "failed":
-        return "destructive";
-      default:
-        return "secondary";
-    }
-  };
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString("id-ID", {
@@ -158,7 +89,8 @@ const DetailHistoryPage = () => {
   }
 
   const detail = shipment.shipmentDetail;
-  const deliveryStatus = shipment.deliveryStatus ?? "pending";
+  const deliveryStatus: DeliveryStatus =
+    shipment.deliveryStatus ?? "READY_TO_PICKUP"; // ✅ Fix: uppercase, type DeliveryStatus
 
   return (
     <Page
@@ -195,7 +127,6 @@ const DetailHistoryPage = () => {
                   </div>
                 </div>
               </div>
-
               {/* Penerima */}
               <div className="flex items-start gap-3">
                 <div className="bg-oranye p-4 rounded-2xl text-white">
@@ -239,7 +170,6 @@ const DetailHistoryPage = () => {
                     </p>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-3">
                   <div className="bg-primary p-3 rounded-xl text-white">
                     <Box size={16} variant="Bold" />
@@ -251,7 +181,6 @@ const DetailHistoryPage = () => {
                     </p>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-3">
                   <div className="bg-oranye p-3 rounded-xl text-white">
                     <I3DCubeScan size={16} variant="Bold" />
@@ -263,7 +192,6 @@ const DetailHistoryPage = () => {
                     </p>
                   </div>
                 </div>
-
                 <div className="flex items-center gap-3">
                   <div className="bg-dark-green p-3 rounded-xl text-white">
                     <CardPos size={16} variant="Bold" />
@@ -305,7 +233,8 @@ const DetailHistoryPage = () => {
                             index === 0 ? "bg-primary" : "bg-dark-green"
                           }`}
                         >
-                          {getStatusIcon(history.status)}
+                          {getStatusIcon(history.status as DeliveryStatus)} //
+                          ✅ Fix: cast ke DeliveryStatus
                         </div>
                         {index < arr.length - 1 && (
                           <div className="w-px h-8 bg-gray-300 mt-2" />
@@ -313,7 +242,8 @@ const DetailHistoryPage = () => {
                       </div>
                       <div className="flex-1 pb-6">
                         <p className="text-sm font-medium">
-                          {getStatusLabel(history.status)}
+                          {getStatusLabel(history.status as DeliveryStatus)} //
+                          ✅ Fix: cast ke DeliveryStatus
                         </p>
                         <p className="text-sm text-secondary mb-1">
                           {formatDate(history.createdAt)}

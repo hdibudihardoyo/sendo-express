@@ -4,7 +4,7 @@ import type { AxiosErrorType } from "../../utils/api-error-types";
 import type {
   CourierShipment,
   CourierShipmentActionResult,
-  GetAllCourierShipmentsParams,
+  CourierShipmentParams,
   GetAllCourierShipmentsResponse,
   GetOneCourierShipmentResponse,
   CourierShipmentActionResponse,
@@ -13,9 +13,10 @@ import type {
   CourierShipmentListItem,
 } from "@/lib/api/types/delivery";
 
+// Find All Shipments Courier
 export const courierShipmentService = {
   async getAllCourierShipments(
-    params?: GetAllCourierShipmentsParams,
+    params?: CourierShipmentParams,
   ): Promise<CourierShipmentListItem[]> {
     try {
       const response = await apiClient.get<GetAllCourierShipmentsResponse>(
@@ -29,6 +30,7 @@ export const courierShipmentService = {
     }
   },
 
+  // Find One Shipment Courier
   async getOneCourierShipment(
     trackingNumber: string,
   ): Promise<CourierShipment> {
@@ -43,6 +45,7 @@ export const courierShipmentService = {
     }
   },
 
+  // Pick Shipment
   async pickShipment(
     trackingNumber: string,
   ): Promise<CourierShipmentActionResult> {
@@ -57,6 +60,7 @@ export const courierShipmentService = {
     }
   },
 
+  // Pick Up Shipment
   async pickUpShipment(
     trackingNumber: string,
     data: PickUpShipmentRequest,
@@ -73,6 +77,7 @@ export const courierShipmentService = {
     }
   },
 
+  // Deliver To Branch
   async deliverToBranch(
     trackingNumber: string,
   ): Promise<CourierShipmentActionResult> {
@@ -87,6 +92,7 @@ export const courierShipmentService = {
     }
   },
 
+  // Pick From Branch
   async pickFromBranch(
     trackingNumber: string,
   ): Promise<CourierShipmentActionResult> {
@@ -101,6 +107,7 @@ export const courierShipmentService = {
     }
   },
 
+  // Pick Up From Branch
   async pickUpFromBranch(
     trackingNumber: string,
   ): Promise<CourierShipmentActionResult> {
@@ -115,6 +122,7 @@ export const courierShipmentService = {
     }
   },
 
+  // Deliver To Customer
   async deliverToCustomer(
     trackingNumber: string,
     data: DeliverToCustomerRequest,

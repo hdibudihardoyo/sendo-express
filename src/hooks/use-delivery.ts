@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { courierShipmentService } from "@/lib/api/services/delivery";
 import { toast } from "react-hot-toast";
 import type {
-  GetAllCourierShipmentsParams,
+  CourierShipmentParams,
   PickUpShipmentRequest,
   DeliverToCustomerRequest,
 } from "@/lib/api/types/delivery";
@@ -10,7 +10,7 @@ import type {
 export const courierShipmentKeys = {
   all: ["courier-shipments"] as const,
   lists: () => [...courierShipmentKeys.all, "list"] as const,
-  list: (filters?: GetAllCourierShipmentsParams) =>
+  list: (filters?: CourierShipmentParams) =>
     [...courierShipmentKeys.lists(), filters] as const,
   details: () => [...courierShipmentKeys.all, "detail"] as const,
   detail: (trackingNumber: string) =>
@@ -18,7 +18,7 @@ export const courierShipmentKeys = {
 };
 
 // get all shipments
-export const useCourierShipments = (filters?: GetAllCourierShipmentsParams) => {
+export const useCourierShipments = (filters?: CourierShipmentParams) => {
   return useQuery({
     queryKey: courierShipmentKeys.list(filters),
     queryFn: () => courierShipmentService.getAllCourierShipments(filters),

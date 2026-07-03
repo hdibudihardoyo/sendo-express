@@ -1,4 +1,5 @@
 import type { ApiMeta, Pagination } from "./index";
+import type { DeliveryStatus } from "./shipment";
 
 export interface ScanShipmentRequest {
   trackingNumber: string;
@@ -23,7 +24,7 @@ export interface ShipmentBranch {
   createdAt: string;
   trackingNumber: string;
   type: "IN" | "OUT";
-  status: string;
+  status: DeliveryStatus;
   scanTime: string;
   description: string;
   ScannedByUser: ScannedByUser;

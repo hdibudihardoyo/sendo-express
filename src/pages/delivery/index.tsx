@@ -10,29 +10,14 @@ import { PermissionGuard } from "@/components/permission-guard";
 import { Button } from "@/components/ui/button";
 
 export default function DeliveryPage() {
-  // Use custom meta hook
   useMeta(META_DATA.delivery);
 
   const [searchTerm, setSearchTerm] = useState("");
-
-  const { data: shipments = [], error, refetch } = useCourierShipments();
-
-  // Filter shipments based on search term
-  const filteredShipments = shipments.filter(
-    (shipment) =>
-      shipment.trackingNumber
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      shipment.shipmentDetail?.packageType
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      shipment.shipmentDetail?.destinationAddress
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      shipment.shipmentDetail?.recipientName
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()),
-  );
+  const {
+    data: shipments = [],
+    error,
+    refetch,
+  } = useCourierShipments({ trackingNumber: searchTerm || undefined });
 
   const handleRefresh = () => {
     refetch();
@@ -53,25 +38,23 @@ export default function DeliveryPage() {
   }
 
   return (
-    <>
-      <PermissionGuard permission="delivery.read">
-        <Page title="Daftar Pengiriman 🚚📦">
-          <div className="mb-4 flex gap-4 items-center">
-            <Input
-              type="text"
-              placeholder="Cari berdasarkan nomor resi, produk, atau alamat"
-              className="w-full max-w-md bg-white"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <DataTable
-            data={filteredShipments}
-            columns={courierColumns(handleRefresh)}
-            title="Semua Pengiriman"
+    <PermissionGuard permission="delivery.read">
+      <Page title="Daftar Pengiriman 🚚📦">
+        <div className="mb-4 flex gap-4 items-center">
+          <Input
+            type="text"
+            placeholder="Cari berdasarkan nomor resi atau alamat tujuan"
+            className="w-full max-w-md bg-white"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
-        </Page>
-      </PermissionGuard>
-    </>
+        </div>
+        <DataTable
+          data={shipments}
+          columns={courierColumns(handleRefresh)}
+          title="Semua Pengiriman"
+        />
+      </Page>
+    </PermissionGuard>
   );
 }

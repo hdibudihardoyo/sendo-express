@@ -1,52 +1,19 @@
 "use client";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { type ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Eye } from "lucide-react";
-import type { DeliveryItem } from "@/data/deliveries";
+import type { Shipment } from "@/lib/api/types/shipment";
+import {
+  getStatusBadgeVariant,
+  getStatusLabel,
+} from "@/lib/utils/status-utils";
 
-// Helper function to determine badge variant based on status
-const getVariantFromStatus = (
-  status: DeliveryItem["status"],
-): "darkGreen" | "warning" | "destructive" | "secondary" | "default" => {
-  switch (status) {
-    case "delivered":
-      return "darkGreen";
-    case "in transit":
-      return "warning";
-    case "failed":
-      return "destructive";
-    case "picked up":
-      return "default";
-    case "waiting pickup":
-      return "secondary";
-    default:
-      return "secondary";
-  }
-};
-
-// Helper function to format status text for display
-const formatStatus = (status: DeliveryItem["status"]): string => {
-  switch (status) {
-    case "delivered":
-      return "Terkirim";
-    case "in transit":
-      return "Dalam Perjalanan";
-    case "failed":
-      return "Gagal";
-    case "picked up":
-      return "Diambil";
-    case "waiting pickup":
-      return "Menunggu Pengambilan";
-    default:
-      return "Tidak Diketahui";
-  }
-};
-
-export const deliveryColumns: ColumnDef<DeliveryItem>[] = [
+export const deliveryColumns = (
+  onViewDetail: (shipment: Shipment) => void,
+): ColumnDef<Shipment>[] => [
   {
-    accessorKey: "resi",
+    accessorKey: "trackingNumber",
     header: ({ column }) => {
       return (
         <div className="flex items-center justify-between">
@@ -64,83 +31,84 @@ export const deliveryColumns: ColumnDef<DeliveryItem>[] = [
     cell: ({ row }) => {
       return (
         <div className="text-sm font-medium">
-          {row.getValue("resi") || "N/A"}
+          {row.getValue("trackingNumber") || "N/A"}
         </div>
       );
     },
   },
   {
-    accessorKey: "product",
+    id: "packageType",
     header: "Produk",
     cell: ({ row }) => {
-      return <div className="text-sm">{row.getValue("product") || "N/A"}</div>;
+      return (
+        <div className="text-sm">
+          {row.original.shipmentDetail?.packageType || "N/A"}
+        </div>
+      );
     },
   },
   {
-    accessorKey: "pickupAddr",
+    id: "pickupAddr",
     header: "Alamat Pickup",
     cell: ({ row }) => {
       return (
         <div className="text-sm max-w-xs truncate">
-          {row.getValue("pickupAddr") || "N/A"}
+          {row.original.pickupAddress?.address || "N/A"}
         </div>
       );
     },
   },
   {
-    accessorKey: "destinationAddr",
+    id: "destinationAddr",
     header: "Alamat Tujuan",
     cell: ({ row }) => {
       return (
         <div className="text-sm max-w-xs truncate">
-          {row.getValue("destinationAddr") || "N/A"}
+          {row.original.shipmentDetail?.destinationAddress || "N/A"}
         </div>
       );
     },
   },
   {
-    accessorKey: "pickupDate",
+    accessorKey: "createdAt",
     header: "Tanggal Pickup",
     cell: ({ row }) => {
+      const createdAt = row.getValue("createdAt") as string | undefined;
       return (
-        <div className="text-sm">{row.getValue("pickupDate") || "N/A"}</div>
+        <div className="text-sm">
+          {createdAt ? new Date(createdAt).toLocaleDateString("id-ID") : "N/A"}
+        </div>
       );
     },
   },
   {
-    accessorKey: "weight",
+    id: "weight",
     header: "Berat (kg)",
     cell: ({ row }) => {
-      const weight = row.getValue("weight") as number | undefined;
+      const weight = row.original.shipmentDetail?.weight;
       return <div className="text-sm">{weight ? `${weight} kg` : "N/A"}</div>;
     },
   },
   {
-    accessorKey: "status",
+    accessorKey: "deliveryStatus",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status") as DeliveryItem["status"];
+      const status = row.original.deliveryStatus;
       return (
-        <Badge variant={getVariantFromStatus(status)}>
-          {formatStatus(status)}
+        <Badge variant={getStatusBadgeVariant(status)}>
+          {getStatusLabel(status)}
         </Badge>
       );
     },
   },
   {
-    accessorKey: "delivery_type",
+    id: "deliveryType",
     header: "Tipe Pengiriman",
     cell: ({ row }) => {
-      const deliveryType = row.original.delivery_type;
+      const deliveryType = row.original.shipmentDetail?.deliveryType;
       return (
-        <div className="text-sm">
-          {deliveryType
-            ? deliveryType === "same day"
-              ? "Same Day"
-              : deliveryType === "next day"
-                ? "Next Day"
-                : "Instant"
-            : "Reguler"}
+        <div className="text-sm capitalize">
+          {deliveryType ? deliveryType.replace(/_/g, " ") : "Reguler"}
         </div>
       );
     },
@@ -149,12 +117,12 @@ export const deliveryColumns: ColumnDef<DeliveryItem>[] = [
     id: "actions",
     header: "Aksi",
     cell: ({ row }) => {
-      const delivery = row.original;
+      const shipment = row.original;
       return (
         <Button
           variant="outline"
           size="sm"
-          onClick={() => alert(`Detail for ${delivery.resi}`)}
+          onClick={() => onViewDetail(shipment)}
         >
           <Eye className="mr-2 h-4 w-4" />
           Detail

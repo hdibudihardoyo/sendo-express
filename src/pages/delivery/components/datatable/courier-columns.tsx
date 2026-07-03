@@ -1,5 +1,4 @@
 "use client";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,10 +15,11 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Camera, Eye } from "lucide-react";
 import { useState } from "react";
 import { toast } from "react-hot-toast";
-import type {
-  CourierShipment,
-  CourierShipmentStatus,
-} from "@/lib/api/types/delivery";
+import type { CourierShipmentListItem } from "@/lib/api/types/delivery";
+import {
+  getStatusBadgeVariant,
+  getStatusLabel,
+} from "@/lib/utils/status-utils";
 import {
   usePickShipment,
   usePickUpShipment,
@@ -31,51 +31,8 @@ import {
 import { useUploadMedia } from "@/hooks/use-media";
 import Detail from "../detail";
 
-const getVariantFromStatus = (
-  status: CourierShipmentStatus,
-): "secondary" | "warning" | "default" | "destructive" | "darkGreen" => {
-  switch (status) {
-    case "READY_TO_PICKUP":
-    case "WAITING_FOR_PICKUP":
-      return "secondary";
-    case "PICKED_UP":
-      return "warning";
-    case "IN_TRANSIT":
-      return "default";
-    case "READY_TO_DELIVER":
-      return "default";
-    case "ON_THE_WAY_TO_ADDRESS":
-      return "warning";
-    case "DELIVERED":
-      return "darkGreen";
-    default:
-      return "default";
-  }
-};
-
-const formatStatus = (status: CourierShipmentStatus): string => {
-  switch (status) {
-    case "READY_TO_PICKUP":
-      return "Siap untuk Pickup";
-    case "WAITING_FOR_PICKUP":
-      return "Menunggu Pickup";
-    case "PICKED_UP":
-      return "Sudah Dipickup";
-    case "IN_TRANSIT":
-      return "Dalam Perjalanan";
-    case "READY_TO_DELIVER":
-      return "Siap Dikirim";
-    case "ON_THE_WAY_TO_ADDRESS":
-      return "Menuju Alamat";
-    case "DELIVERED":
-      return "Terkirim";
-    default:
-      return status;
-  }
-};
-
 interface ActionButtonsProps {
-  shipment: CourierShipment;
+  shipment: CourierShipmentListItem;
   onActionComplete: () => void;
 }
 
@@ -110,13 +67,10 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
         toast.error("Harap pilih file gambar");
         return;
       }
-
       if (file.size > 5 * 1024 * 1024) {
-        // 5MB limit
         toast.error("Ukuran file maksimal 5MB");
         return;
       }
-
       setSelectedPhoto(file);
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -137,10 +91,8 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
       toast.error("Foto belum dipilih");
       return;
     }
-
     try {
       const uploaded = await uploadMedia.mutateAsync(selectedPhoto);
-
       if (actionType === "pickup") {
         pickUpShipment.mutate(
           {
@@ -158,7 +110,6 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
           { onSuccess: () => resetPhotoDialog() },
         );
       }
-
       onActionComplete();
     } catch (error: unknown) {
       const errorMessage =
@@ -196,10 +147,8 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
     });
   };
 
-  // Determine which buttons to show based on courier shipment status
   const renderActionButtons = () => {
     if (!shipment.trackingNumber) return null;
-
     switch (shipment.status) {
       case "READY_TO_PICKUP":
         return (
@@ -224,7 +173,6 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
             Konfirmasi Pickup
           </Button>
         );
-
       case "PICKED_UP":
         return (
           <Button
@@ -236,7 +184,6 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
             Kirim ke Cabang
           </Button>
         );
-
       case "IN_TRANSIT":
         return (
           <Button
@@ -248,7 +195,6 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
             Ambil dari Cabang
           </Button>
         );
-
       case "READY_TO_DELIVER":
         return (
           <Button
@@ -260,7 +206,6 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
             Siap Kirim
           </Button>
         );
-
       case "ON_THE_WAY_TO_ADDRESS":
         return (
           <Button
@@ -273,14 +218,12 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
             Konfirmasi Terkirim
           </Button>
         );
-
       case "DELIVERED":
         return (
-          <Badge variant="default" className="bg-green-100 text-green-800">
+          <Badge variant="darkGreen" className="bg-green-100 text-green-800">
             Selesai
           </Badge>
         );
-
       default:
         return null;
     }
@@ -292,17 +235,12 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
         <Eye className="w-4 h-4 mr-1" />
         Detail Paket
       </Button>
-
       {renderActionButtons()}
-
-      {/* Simplified Package Detail Modal */}
       <Detail
-        shipment={shipment}
+        trackingNumber={shipment.trackingNumber}
         isOpen={isDetailOpen}
         onClose={() => setIsDetailOpen(false)}
       />
-
-      {/* Photo Upload Dialog */}
       <Dialog open={isPhotoDialogOpen} onOpenChange={setIsPhotoDialogOpen}>
         <DialogContent className="!max-w-sm">
           <DialogHeader>
@@ -317,7 +255,6 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
                 : "Unggah foto bukti pengiriman ke customer"}
             </DialogDescription>
           </DialogHeader>
-
           <div className="space-y-4">
             <div>
               <Label htmlFor="photo" className="text-sm font-medium">
@@ -331,7 +268,6 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
                 className="mt-2"
               />
             </div>
-
             {photoPreview && (
               <div className="mt-4">
                 <img
@@ -342,7 +278,6 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
               </div>
             )}
           </div>
-
           <DialogFooter>
             <Button
               variant="secondary"
@@ -367,7 +302,7 @@ function ActionButtons({ shipment, onActionComplete }: ActionButtonsProps) {
 
 export const courierColumns = (
   onActionComplete: () => void,
-): ColumnDef<CourierShipment>[] => [
+): ColumnDef<CourierShipmentListItem>[] => [
   {
     accessorKey: "trackingNumber",
     header: ({ column }) => {
@@ -407,10 +342,10 @@ export const courierColumns = (
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status") as CourierShipmentStatus;
+      const status = row.original.status;
       return (
-        <Badge variant={getVariantFromStatus(status)}>
-          {formatStatus(status)}
+        <Badge variant={getStatusBadgeVariant(status)}>
+          {getStatusLabel(status)}
         </Badge>
       );
     },

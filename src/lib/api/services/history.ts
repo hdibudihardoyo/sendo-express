@@ -7,6 +7,7 @@ import type {
   SingleHistoryResponse,
 } from "@/lib/api/types/history";
 
+// get all history
 export const getAllHistory = async (
   params?: HistoryParams,
 ): Promise<HistoryResponse> => {
@@ -21,12 +22,13 @@ export const getAllHistory = async (
   }
 };
 
-export const getByIdHistory = async (
-  shipmentId: number,
+// get history by id
+export const getHistoryById = async (
+  historyId: number,
 ): Promise<SingleHistoryResponse> => {
   try {
     const { data } = await apiClient.get<SingleHistoryResponse>(
-      `/api/shipments/histories/${shipmentId}`,
+      `/api/shipments/histories/${historyId}`,
     );
     return data;
   } catch (error) {

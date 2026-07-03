@@ -25,16 +25,13 @@ import {
   getStatusLabel,
   getStatusIcon,
 } from "@/lib/utils/status-utils";
-import type { DeliveryStatus } from "@/lib/api/types/shipment";
 
 const DetailHistoryPage = () => {
   useMeta(META_DATA["history-detail"]);
   const { id } = useParams();
   const navigate = useNavigate();
-  const shipmentId = id ? parseInt(id) : 0;
-
-  const { data, isLoading, isError } = useHistoryById(shipmentId);
-
+  const historyId = id ? parseInt(id) : 0;
+  const { data, isLoading, isError } = useHistoryById(historyId);
   const shipment = data?.data ?? null;
 
   const breadcrumbs: PageBreadcrumbItem[] = [
@@ -51,7 +48,7 @@ const DetailHistoryPage = () => {
       minute: "2-digit",
     });
 
-  if (!id || isNaN(shipmentId)) {
+  if (!id || isNaN(historyId)) {
     navigate("/history");
     return null;
   }
@@ -88,9 +85,7 @@ const DetailHistoryPage = () => {
     );
   }
 
-  const detail = shipment.shipmentDetail;
-  const deliveryStatus: DeliveryStatus =
-    shipment.deliveryStatus ?? "READY_TO_PICKUP"; // ✅ Fix: uppercase, type DeliveryStatus
+  const info = shipment.shipmentInfo;
 
   return (
     <Page
@@ -114,16 +109,16 @@ const DetailHistoryPage = () => {
                 </div>
                 <div className="space-y-2">
                   <h2 className="font-semibold">
-                    {shipment.pickupAddress?.address ?? "Alamat tidak tersedia"}
+                    {info?.senderAddress ?? "Alamat tidak tersedia"}
                   </h2>
                   <p className="text-sm text-secondary">Alamat Pengirim</p>
                   <div className="flex items-center gap-2 text-sm">
                     <User size={16} />
-                    <span>{detail?.senderName ?? "Tidak tersedia"}</span>
+                    <span>{info?.senderName ?? "Tidak tersedia"}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <CallOutgoing size={16} />
-                    <span>{detail?.senderPhone ?? "Tidak tersedia"}</span>
+                    <span>{info?.senderPhone ?? "Tidak tersedia"}</span>
                   </div>
                 </div>
               </div>
@@ -134,22 +129,21 @@ const DetailHistoryPage = () => {
                 </div>
                 <div className="space-y-2">
                   <h2 className="font-semibold">
-                    {detail?.destinationAddress ?? "Alamat tidak tersedia"}
+                    {info?.recipientAddress ?? "Alamat tidak tersedia"}
                   </h2>
                   <p className="text-sm text-secondary">Alamat Penerima</p>
                   <div className="flex items-center gap-2 text-sm">
                     <Profile2User size={16} />
-                    <span>{detail?.recipientName ?? "Tidak tersedia"}</span>
+                    <span>{info?.recipientName ?? "Tidak tersedia"}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <CallIncoming size={16} />
-                    <span>{detail?.recipientPhone ?? "Tidak tersedia"}</span>
+                    <span>{info?.recipientPhone ?? "Tidak tersedia"}</span>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-
           {/* Info Pengiriman */}
           <Card className="rounded-2xl">
             <CardHeader>
@@ -166,7 +160,7 @@ const DetailHistoryPage = () => {
                   <div>
                     <h3 className="text-sm text-secondary">Jenis Pengiriman</h3>
                     <p className="font-semibold capitalize">
-                      {detail?.deliveryType ?? "Reguler"}
+                      {shipment.deliveryType ?? "Reguler"}
                     </p>
                   </div>
                 </div>
@@ -188,7 +182,7 @@ const DetailHistoryPage = () => {
                   <div>
                     <h3 className="text-sm text-secondary">Jenis Paket</h3>
                     <p className="font-semibold capitalize">
-                      {detail?.packageType?.toLowerCase() ?? "Tidak tersedia"}
+                      {shipment.packageType?.toLowerCase() ?? "Tidak tersedia"}
                     </p>
                   </div>
                 </div>
@@ -198,8 +192,8 @@ const DetailHistoryPage = () => {
                   </div>
                   <div>
                     <h3 className="text-sm text-secondary">Status</h3>
-                    <Badge variant={getStatusBadgeVariant(deliveryStatus)}>
-                      {getStatusLabel(deliveryStatus)}
+                    <Badge variant={getStatusBadgeVariant(shipment.status)}>
+                      {getStatusLabel(shipment.status)}
                     </Badge>
                   </div>
                 </div>
@@ -207,7 +201,6 @@ const DetailHistoryPage = () => {
             </CardContent>
           </Card>
         </div>
-
         {/* Riwayat Status */}
         <div className="flex flex-col gap-4">
           <Card className="rounded-2xl">
@@ -233,8 +226,7 @@ const DetailHistoryPage = () => {
                             index === 0 ? "bg-primary" : "bg-dark-green"
                           }`}
                         >
-                          {getStatusIcon(history.status as DeliveryStatus)} //
-                          ✅ Fix: cast ke DeliveryStatus
+                          {getStatusIcon(history.status)}
                         </div>
                         {index < arr.length - 1 && (
                           <div className="w-px h-8 bg-gray-300 mt-2" />
@@ -242,8 +234,7 @@ const DetailHistoryPage = () => {
                       </div>
                       <div className="flex-1 pb-6">
                         <p className="text-sm font-medium">
-                          {getStatusLabel(history.status as DeliveryStatus)} //
-                          ✅ Fix: cast ke DeliveryStatus
+                          {getStatusLabel(history.status)}
                         </p>
                         <p className="text-sm text-secondary mb-1">
                           {formatDate(history.createdAt)}

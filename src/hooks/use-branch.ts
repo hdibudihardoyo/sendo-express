@@ -1,19 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { branchService } from "@/lib/api/services/branch";
 import { toast } from "react-hot-toast";
-import type { BranchFilters, CreateBranchRequest } from "@/lib/api/types/branch";
+import type { BranchParams, CreateBranchRequest } from "@/lib/api/types/branch";
 
 // query keys
 export const branchKeys = {
   all: ["branches"] as const,
   lists: () => [...branchKeys.all, "list"] as const,
-  list: (filters?: BranchFilters) => [...branchKeys.lists(), { filters }] as const,
+  list: (filters?: BranchParams) =>
+    [...branchKeys.lists(), { filters }] as const,
   details: () => [...branchKeys.all, "detail"] as const,
   detail: (id: number) => [...branchKeys.all, "details", id] as const,
 };
 
-// get all branches with optional filters
-export const useBranches = (filters?: BranchFilters) => {
+// get all branches
+export const useBranches = (filters?: BranchParams) => {
   return useQuery({
     queryKey: branchKeys.list(filters),
     queryFn: () => branchService.getAll(filters),

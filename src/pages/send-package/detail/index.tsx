@@ -14,61 +14,66 @@ import {
   Timer,
   TruckTime,
   User,
+  DocumentDownload,
 } from "iconsax-reactjs";
 import { Slash } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "react-hot-toast";
+import { Loader2 } from "lucide-react";
 import { useMeta, META_DATA } from "@/hooks/use-meta";
 import { useShipmentById, useGeneratePdfInvoice } from "@/hooks/use-shipment";
 import {
   getStatusLabel,
-  getStatusIcon,
   getStatusBadgeVariant,
+  getPaymentVariant,
+  formatPaymentStatus,
+  isPaymentCompleted,
+  getPackageTypeLabel,
+  getHistoryLabel,
+  getHistoryIcon,
+  getDeliveryTypeLabel,
 } from "@/lib/utils/status-utils";
 
 const DetailPage = () => {
-  // Use custom meta hook
   useMeta(META_DATA["send-package-detail"]);
   const { id } = useParams();
   const navigate = useNavigate();
   const shipmentId = id ? parseInt(id) : 0;
   const generatePdfInvoice = useGeneratePdfInvoice();
-  const {
-    data: shipment,
-    isLoading: loading,
-    error,
-  } = useShipmentById(shipmentId);
+  const { data: shipment, isLoading, error } = useShipmentById(shipmentId);
 
   useEffect(() => {
-    if (!shipmentId) {
+    if (!shipmentId || isNaN(shipmentId)) {
       toast.error("ID pengiriman tidak valid");
       navigate("/send-package");
     }
   }, [shipmentId, navigate]);
 
-  if (error) {
-    toast.error("Gagal memuat data pengiriman");
-    navigate("/send-package");
-    return null;
-  }
+  useEffect(() => {
+    if (error) {
+      toast.error("Gagal memuat data pengiriman");
+      navigate("/send-package");
+    }
+  }, [error, navigate]);
 
   const downloadPdf = () => {
     if (!shipmentId) return;
     generatePdfInvoice.mutate(shipmentId);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <Page title="Detail Pengiriman">
-        <div className="flex items-center justify-center h-64">
-          <p>Memuat data pengiriman...</p>
+        <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-sm">Memuat detail pengiriman...</p>
         </div>
       </Page>
     );
   }
 
-  if (!shipment) {
+  if (error || !shipment) {
     return null;
   }
 
@@ -116,492 +121,455 @@ const DetailPage = () => {
     : [];
 
   return (
-    <>
-      <Page
-        title="Detail Pengiriman"
-        breadcrumbs={{
-          items: breadcrumbs,
-          separator: <Slash size={16} />,
-        }}
-      >
-        <div className="max-w-full overflow-hidden">
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 items-start">
-            <div className="flex flex-col gap-4 min-w-0">
-              {/* User Information */}
-              <Card className="rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-lg sm:text-xl font-semibold">
-                    Informasi Pengirim
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-primary p-3 sm:p-4 rounded-2xl text-white flex-shrink-0">
-                      <User size={20} variant="Bold" />
-                    </div>
-                    <div className="space-y-1 min-w-0 flex-1">
-                      <h2 className="font-semibold truncate">
-                        {shipment.shipmentDetail?.senderName ||
-                          "Tidak tersedia"}
-                      </h2>
-                      <p className="text-sm text-secondary">Nama Pengirim</p>
-                    </div>
+    <Page
+      title="Detail Pengiriman"
+      breadcrumbs={{
+        items: breadcrumbs,
+        separator: <Slash size={16} />,
+      }}
+    >
+      <div className="max-w-full overflow-hidden">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6 items-start">
+          <div className="flex flex-col gap-4 min-w-0">
+            {/* User Information */}
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-lg sm:text-xl font-semibold">
+                  Informasi Pengirim
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary p-3 sm:p-4 rounded-2xl text-white flex-shrink-0">
+                    <User size={20} variant="Bold" />
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="bg-dark-green p-3 sm:p-4 rounded-2xl text-white flex-shrink-0">
-                      <CallOutgoing size={20} variant="Bold" />
-                    </div>
-                    <div className="space-y-1 min-w-0 flex-1">
-                      <h2 className="font-semibold break-all">
-                        {shipment.shipmentDetail?.senderPhone ||
-                          "Tidak tersedia"}
-                      </h2>
-                      <p className="text-sm text-secondary">Nomor Telepon</p>
-                    </div>
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <h2 className="font-semibold truncate">
+                      {shipment.shipmentDetail?.senderName || "-"}
+                    </h2>
+                    <p className="text-sm text-secondary">Nama Pengirim</p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-dark-green p-3 sm:p-4 rounded-2xl text-white flex-shrink-0">
+                    <CallOutgoing size={20} variant="Bold" />
+                  </div>
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <h2 className="font-semibold break-all">
+                      {shipment.shipmentDetail?.senderPhone || "-"}
+                    </h2>
+                    <p className="text-sm text-secondary">Nomor Telepon</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Recipient Information */}
-              <Card className="rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-lg sm:text-xl font-semibold">
-                    Informasi Penerima
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-oranye p-3 sm:p-4 rounded-2xl text-white flex-shrink-0">
-                      <Profile2User size={20} variant="Bold" />
-                    </div>
-                    <div className="space-y-1 min-w-0 flex-1">
-                      <h2 className="font-semibold truncate">
-                        {shipment.shipmentDetail?.recipientName ||
-                          "Tidak tersedia"}
-                      </h2>
-                      <p className="text-sm text-secondary">Nama Penerima</p>
-                    </div>
+            {/* Recipient Information */}
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-lg sm:text-xl font-semibold">
+                  Informasi Penerima
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="bg-oranye p-3 sm:p-4 rounded-2xl text-white flex-shrink-0">
+                    <Profile2User size={20} variant="Bold" />
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="bg-secondary p-3 sm:p-4 rounded-2xl text-white flex-shrink-0">
-                      <CallIncoming size={20} variant="Bold" />
-                    </div>
-                    <div className="space-y-1 min-w-0 flex-1">
-                      <h2 className="font-semibold break-all">
-                        {shipment.shipmentDetail?.recipientPhone ||
-                          "Tidak tersedia"}
-                      </h2>
-                      <p className="text-sm text-secondary">Nomor Telepon</p>
-                    </div>
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <h2 className="font-semibold truncate">
+                      {shipment.shipmentDetail?.recipientName || "-"}
+                    </h2>
+                    <p className="text-sm text-secondary">Nama Penerima</p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="bg-secondary p-3 sm:p-4 rounded-2xl text-white flex-shrink-0">
+                    <CallIncoming size={20} variant="Bold" />
+                  </div>
+                  <div className="space-y-1 min-w-0 flex-1">
+                    <h2 className="font-semibold break-all">
+                      {shipment.shipmentDetail?.recipientPhone ||
+                        "Tidak tersedia"}
+                    </h2>
+                    <p className="text-sm text-secondary">Nomor Telepon</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-              {/* Address Information */}
-              <Card className="rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-lg sm:text-xl font-semibold">
-                    Alamat Pengiriman
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-primary p-3 sm:p-4 rounded-2xl text-white flex-shrink-0">
-                      <Gps size={20} variant="Bold" />
+            {/* Address Information */}
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-lg sm:text-xl font-semibold">
+                  Alamat Pengiriman
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="bg-primary p-3 sm:p-4 rounded-2xl text-white flex-shrink-0">
+                    <Gps size={20} variant="Bold" />
+                  </div>
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <h2 className="font-semibold break-words leading-relaxed">
+                      {shipment.pickupAddress?.address ||
+                        "Detail alamat tidak tersedia"}
+                    </h2>
+                    <p className="text-xs text-secondary">Alamat Penjemputan</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="bg-oranye p-3 sm:p-4 rounded-2xl text-white flex-shrink-0">
+                    <Location size={20} variant="Bold" />
+                  </div>
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <h2 className="font-semibold break-words leading-relaxed">
+                      {shipment.shipmentDetail?.destinationAddress ||
+                        "Alamat tidak tersedia"}
+                    </h2>
+                    <p className="text-xs text-secondary">Alamat Tujuan</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Package Information */}
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-lg sm:text-xl font-semibold">
+                  Informasi Paket
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="bg-primary p-3 rounded-xl text-white flex-shrink-0">
+                      <Box size={16} variant="Bold" />
                     </div>
-                    <div className="space-y-1 flex-1 min-w-0">
-                      <h2 className="font-semibold break-words leading-relaxed">
-                        {shipment.pickupAddress?.address ||
-                          "Detail alamat tidak tersedia"}
-                      </h2>
-                      <p className="text-xs text-secondary">
-                        Alamat Penjemputan
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm text-secondary">Jenis Paket</h3>
+                      <p className="font-semibold capitalize truncate">
+                        {shipment.shipmentDetail?.packageType
+                          ? getPackageTypeLabel(
+                              shipment.shipmentDetail.packageType,
+                            )
+                          : "-"}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <div className="bg-oranye p-3 sm:p-4 rounded-2xl text-white flex-shrink-0">
-                      <Location size={20} variant="Bold" />
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="bg-dark-green p-3 rounded-xl text-white flex-shrink-0">
+                      <TruckTime size={16} variant="Bold" />
                     </div>
-                    <div className="space-y-1 flex-1 min-w-0">
-                      <h2 className="font-semibold break-words leading-relaxed">
-                        {shipment.shipmentDetail?.destinationAddress ||
-                          "Alamat tidak tersedia"}
-                      </h2>
-                      <p className="text-xs text-secondary">Alamat Tujuan</p>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm text-secondary">
+                        Jenis Pengiriman
+                      </h3>
+                      <p className="font-semibold capitalize truncate">
+                        {shipment.shipmentDetail?.deliveryType
+                          ? getDeliveryTypeLabel(
+                              shipment.shipmentDetail.deliveryType,
+                            )
+                          : "Tidak tersedia"}
+                      </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="bg-oranye p-3 rounded-xl text-white flex-shrink-0">
+                      <Box size={16} variant="Bold" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm text-secondary">Berat Paket</h3>
+                      <p className="font-semibold">
+                        {formatWeight(shipment.shipmentDetail?.weight || 0)}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="bg-primary p-3 rounded-xl text-white flex-shrink-0">
+                      <I3DCubeScan size={16} variant="Bold" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm text-secondary">No. Resi</h3>
+                      <p className="font-semibold break-all">
+                        {shipment.trackingNumber || "-"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                {shipment.deliveryStatus && (
+                  <div className="flex items-center gap-3">
+                    <div className="bg-dark-green p-3 rounded-xl text-white flex-shrink-0">
+                      <Box size={16} variant="Bold" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm text-secondary">
+                        Status Pengiriman
+                      </h3>
+                      <Badge
+                        variant={getStatusBadgeVariant(shipment.deliveryStatus)}
+                        className="mt-1"
+                      >
+                        {getStatusLabel(shipment.deliveryStatus)}
+                      </Badge>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
-              {/* Package Information */}
+          <div className="flex flex-col gap-4 min-w-0">
+            {/* Download PDF Button hanya saat pembayaran selesai (PAID/SETTLED) */}
+            {isPaymentCompleted(shipment.paymentStatus) && (
+              <Button
+                onClick={downloadPdf}
+                disabled={generatePdfInvoice.isPending}
+                className="w-full bg-primary hover:bg-primary/90 text-white font-semibold"
+              >
+                {generatePdfInvoice.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2 flex-shrink-0" />
+                    <span className="truncate">Mengunduh PDF...</span>
+                  </>
+                ) : (
+                  <>
+                    <DocumentDownload size={16} variant="Bold" />
+                    <span className="truncate">Unduh PDF</span>
+                  </>
+                )}
+              </Button>
+            )}
+
+            {/* Shipment History */}
+            <Card className="rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-lg sm:text-xl font-semibold">
+                  Riwayat Pengiriman
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {sortedHistories.length > 0 ? (
+                  sortedHistories.map((history, index) => (
+                    <div key={history.id} className="flex gap-4">
+                      <div className="flex flex-col items-center flex-shrink-0">
+                        <div
+                          className={`p-3 rounded-full text-white ${
+                            index === 0
+                              ? "bg-primary"
+                              : index === 1
+                                ? "bg-dark-green"
+                                : "bg-oranye"
+                          }`}
+                        >
+                          {getHistoryIcon(history.status)}
+                        </div>
+                        {index < sortedHistories.length - 1 && (
+                          <div className="w-0.5 h-8 bg-gray-200 mt-2" />
+                        )}
+                      </div>
+                      <div className="flex-1 pb-4 min-w-0">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1 gap-1">
+                          <h3 className="font-semibold">
+                            {getHistoryLabel(history.status)}
+                          </h3>
+                          <span className="text-sm text-secondary flex-shrink-0">
+                            {formatDate(history.createdAt)}
+                          </span>
+                        </div>
+                        <p className="text-sm text-secondary break-words">
+                          {history.description}
+                        </p>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-secondary">
+                    <Timer size={32} className="mx-auto mb-2 opacity-50" />
+                    <p>Belum ada riwayat pengiriman</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Pickup Proof */}
+            {shipment.shipmentDetail?.pickupProof && (
               <Card className="rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-lg sm:text-xl font-semibold">
-                    Informasi Paket
+                    Bukti Penjemputan
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="bg-primary p-3 rounded-xl text-white flex-shrink-0">
-                        <Box size={16} variant="Bold" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-sm text-secondary">Jenis Paket</h3>
-                        <p className="font-semibold capitalize truncate">
-                          {shipment.shipmentDetail?.packageType ||
-                            "Tidak tersedia"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="bg-dark-green p-3 rounded-xl text-white flex-shrink-0">
-                        <TruckTime size={16} variant="Bold" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-sm text-secondary">
-                          Jenis Pengiriman
-                        </h3>
-                        <p className="font-semibold capitalize truncate">
-                          {shipment.shipmentDetail?.deliveryType || "Regular"}
-                        </p>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="bg-gray-50 rounded-xl p-4 overflow-hidden">
+                      <img
+                        src={
+                          import.meta.env.VITE_API_BASE_URL +
+                          "/" +
+                          shipment.shipmentDetail.pickupProof
+                        }
+                        alt="Bukti Penjemputan"
+                        className="w-full h-auto max-h-96 object-contain rounded-lg"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = "none";
+                          target.nextElementSibling?.classList.remove("hidden");
+                        }}
+                      />
+                      <div className="hidden text-center py-8 text-secondary">
+                        <Box size={32} className="mx-auto mb-2 opacity-50" />
+                        <p>Gambar tidak dapat dimuat</p>
                       </div>
                     </div>
+                    <p className="text-sm text-secondary text-center">
+                      Foto yang diambil saat paket dijemput dari alamat
+                      penjemputan
+                    </p>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="bg-oranye p-3 rounded-xl text-white flex-shrink-0">
-                        <Box size={16} variant="Bold" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-sm text-secondary">Berat Paket</h3>
-                        <p className="font-semibold">
-                          {formatWeight(shipment.shipmentDetail?.weight || 0)}
-                        </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Receipt Proof */}
+            {shipment.shipmentDetail?.receiptProof && (
+              <Card className="rounded-2xl">
+                <CardHeader>
+                  <CardTitle className="text-lg sm:text-xl font-semibold">
+                    Bukti Penerimaan
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="bg-gray-50 rounded-xl p-4 overflow-hidden">
+                      <img
+                        src={
+                          import.meta.env.VITE_API_BASE_URL +
+                          "/" +
+                          shipment.shipmentDetail.receiptProof
+                        }
+                        alt="Bukti Penerimaan"
+                        className="w-full h-auto max-h-96 object-contain rounded-lg"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = "none";
+                          target.nextElementSibling?.classList.remove("hidden");
+                        }}
+                      />
+                      <div className="hidden text-center py-8 text-secondary">
+                        <Box size={32} className="mx-auto mb-2 opacity-50" />
+                        <p>Gambar tidak dapat dimuat</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="bg-primary p-3 rounded-xl text-white flex-shrink-0">
-                        <I3DCubeScan size={16} variant="Bold" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-sm text-secondary">No. Resi</h3>
-                        <p className="font-semibold break-all">
-                          {shipment.trackingNumber || "Tidak tersedia"}
-                        </p>
-                      </div>
-                    </div>
+                    <p className="text-sm text-secondary text-center">
+                      Foto yang diambil saat paket diterima di alamat tujuan
+                    </p>
                   </div>
-                  {shipment.deliveryStatus && (
-                    <div className="flex items-center gap-3">
-                      <div className="bg-dark-green p-3 rounded-xl text-white flex-shrink-0">
-                        <Box size={16} variant="Bold" />
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Payment Details */}
+            <Card className="bg-dark-green text-white rounded-2xl">
+              <CardHeader>
+                <CardTitle className="text-lg sm:text-xl font-semibold">
+                  Detail Pembayaran
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {shipment.shipmentDetail ? (
+                  <>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex gap-3 min-w-0">
+                        <TruckTime
+                          size={20}
+                          variant="Bold"
+                          className="flex-shrink-0"
+                        />
+                        <span className="font-medium">Biaya Dasar</span>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-sm text-secondary">
-                          Status Pengiriman
-                        </h3>
+                      <span className="text-lg font-semibold flex-shrink-0">
+                        {formatPrice(shipment.shipmentDetail.basePrice)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex gap-3 min-w-0">
+                        <Box
+                          size={20}
+                          variant="Bold"
+                          className="flex-shrink-0"
+                        />
+                        <span className="font-medium">Biaya Berat</span>
+                      </div>
+                      <span className="text-lg font-semibold flex-shrink-0">
+                        {formatPrice(shipment.shipmentDetail.weightPrice)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex gap-3 min-w-0">
+                        <Gps
+                          size={20}
+                          variant="Bold"
+                          className="flex-shrink-0"
+                        />
+                        <span className="font-medium">Biaya Jarak</span>
+                      </div>
+                      <span className="text-lg font-semibold flex-shrink-0">
+                        {formatPrice(shipment.shipmentDetail.distancePrice)}
+                      </span>
+                    </div>
+                    <hr className="border-t border-white border-dashed" />
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex gap-3 min-w-0">
+                        <CardPos
+                          size={20}
+                          variant="Bold"
+                          className="flex-shrink-0"
+                        />
+                        <span className="font-semibold">Total Harga</span>
+                      </div>
+                      <span className="text-xl font-bold flex-shrink-0">
+                        {formatPrice(shipment.price)}
+                      </span>
+                    </div>
+                    <div className="mt-4 p-3 bg-white/10 rounded-xl">
+                      <div className="flex items-center justify-between gap-4">
+                        <span className="font-medium">Status Pembayaran</span>
                         <Badge
-                          variant={getStatusBadgeVariant(
-                            shipment.deliveryStatus,
-                          )}
-                          className="mt-1"
+                          variant={getPaymentVariant(shipment.paymentStatus)}
+                          className="flex-shrink-0"
                         >
-                          {getStatusLabel(shipment.deliveryStatus)}
+                          {formatPaymentStatus(shipment.paymentStatus)}
                         </Badge>
                       </div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="flex flex-col gap-4 min-w-0">
-              {/* Download PDF Button only when payment is paid*/}
-              {shipment.paymentStatus === "PAID" && (
-                <Button
-                  onClick={downloadPdf}
-                  disabled={generatePdfInvoice.isPending}
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-semibold"
-                >
-                  {generatePdfInvoice.isPending ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2 flex-shrink-0" />
-                      <span className="truncate">Mengunduh PDF...</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        className="w-4 h-4 mr-2 flex-shrink-0"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      <span className="truncate">Unduh PDF</span>
-                    </>
-                  )}
-                </Button>
-              )}
-
-              {/* Shipment History */}
-              <Card className="rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-lg sm:text-xl font-semibold">
-                    Riwayat Pengiriman
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {sortedHistories.length > 0 ? (
-                    sortedHistories.map((history, index) => (
-                      <div key={history.id} className="flex gap-4">
-                        <div className="flex flex-col items-center flex-shrink-0">
-                          <div
-                            className={`p-3 rounded-full text-white ${
-                              index === 0
-                                ? "bg-primary"
-                                : index === 1
-                                  ? "bg-dark-green"
-                                  : "bg-oranye"
-                            }`}
-                          >
-                            {getStatusIcon(
-                              history.status as
-                                | "READY_TO_PICKUP"
-                                | "WAITING_FOR_PICKUP"
-                                | "PICKED_UP"
-                                | "IN_TRANSIT"
-                                | "ARRIVED_AT_BRANCH"
-                                | "DEPARTED_FROM_BRANCH"
-                                | "READY_TO_PICKUP_AT_BRANCH"
-                                | "DELIVERED"
-                                | "COMPLETED"
-                                | "ON_THE_WAY"
-                                | "ON_THE_WAY_TO_ADDRESS"
-                                | "READY_TO_DELIVER"
-                                | "AT_BRANCH"
-                                | null,
-                            ) ?? <Timer size={20} variant="Bold" />}
-                          </div>
-                          {index < sortedHistories.length - 1 && (
-                            <div className="w-0.5 h-8 bg-gray-200 mt-2" />
-                          )}
-                        </div>
-                        <div className="flex-1 pb-4 min-w-0">
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1 gap-1">
-                            <h3 className="font-semibold">{history.status}</h3>
-                            <span className="text-sm text-secondary flex-shrink-0">
-                              {formatDate(history.createdAt)}
-                            </span>
-                          </div>
-                          <p className="text-sm text-secondary break-words">
-                            {history.description ||
-                              `Status pengiriman diperbarui menjadi ${history.status}`}
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="text-center py-8 text-secondary">
-                      <Timer size={32} className="mx-auto mb-2 opacity-50" />
-                      <p>Belum ada riwayat pengiriman</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Pickup Proof */}
-              {shipment.shipmentDetail?.pickupProof && (
-                <Card className="rounded-2xl">
-                  <CardHeader>
-                    <CardTitle className="text-lg sm:text-xl font-semibold">
-                      Bukti Penjemputan
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="bg-gray-50 rounded-xl p-4 overflow-hidden">
-                        <img
-                          src={
-                            import.meta.env.VITE_API_BASE_URL +
-                            "/" +
-                            shipment.shipmentDetail.pickupProof
+                    {shipment.paymentStatus === "PENDING" &&
+                      shipment.payment?.invoiceUrl && (
+                        <Button
+                          onClick={() =>
+                            window.open(shipment.payment.invoiceUrl, "_blank")
                           }
-                          alt="Bukti Penjemputan"
-                          className="w-full h-auto max-h-96 object-contain rounded-lg"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = "none";
-                            target.nextElementSibling?.classList.remove(
-                              "hidden",
-                            );
-                          }}
-                        />
-                        <div className="hidden text-center py-8 text-secondary">
-                          <Box size={32} className="mx-auto mb-2 opacity-50" />
-                          <p>Gambar tidak dapat dimuat</p>
-                        </div>
-                      </div>
-                      <p className="text-sm text-secondary text-center">
-                        Foto yang diambil saat paket dijemput dari alamat
-                        penjemputan
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Receipt Proof */}
-              {shipment.shipmentDetail?.receiptProof && (
-                <Card className="rounded-2xl">
-                  <CardHeader>
-                    <CardTitle className="text-lg sm:text-xl font-semibold">
-                      Bukti Penerimaan
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="bg-gray-50 rounded-xl p-4 overflow-hidden">
-                        <img
-                          src={
-                            import.meta.env.VITE_API_BASE_URL +
-                            "/" +
-                            shipment.shipmentDetail.receiptProof
-                          }
-                          alt="Bukti Penerimaan"
-                          className="w-full h-auto max-h-96 object-contain rounded-lg"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = "none";
-                            target.nextElementSibling?.classList.remove(
-                              "hidden",
-                            );
-                          }}
-                        />
-                        <div className="hidden text-center py-8 text-secondary">
-                          <Box size={32} className="mx-auto mb-2 opacity-50" />
-                          <p>Gambar tidak dapat dimuat</p>
-                        </div>
-                      </div>
-                      <p className="text-sm text-secondary text-center">
-                        Foto yang diambil saat paket diterima di alamat tujuan
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Payment Details */}
-              <Card className="bg-dark-green text-white rounded-2xl">
-                <CardHeader>
-                  <CardTitle className="text-lg sm:text-xl font-semibold">
-                    Detail Pembayaran
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {shipment.shipmentDetail ? (
-                    <>
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex gap-3 min-w-0">
-                          <TruckTime
-                            size={20}
-                            variant="Bold"
-                            className="flex-shrink-0"
-                          />
-                          <span className="font-medium">Biaya Dasar</span>
-                        </div>
-                        <span className="text-lg font-semibold flex-shrink-0">
-                          {formatPrice(shipment.shipmentDetail.basePrice)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex gap-3 min-w-0">
-                          <Box
-                            size={20}
-                            variant="Bold"
-                            className="flex-shrink-0"
-                          />
-                          <span className="font-medium">Biaya Berat</span>
-                        </div>
-                        <span className="text-lg font-semibold flex-shrink-0">
-                          {formatPrice(shipment.shipmentDetail.weightPrice)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex gap-3 min-w-0">
-                          <Gps
-                            size={20}
-                            variant="Bold"
-                            className="flex-shrink-0"
-                          />
-                          <span className="font-medium">Biaya Jarak</span>
-                        </div>
-                        <span className="text-lg font-semibold flex-shrink-0">
-                          {formatPrice(shipment.shipmentDetail.distancePrice)}
-                        </span>
-                      </div>
-                      <hr className="border-t border-white border-dashed" />
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="flex gap-3 min-w-0">
-                          <CardPos
-                            size={20}
-                            variant="Bold"
-                            className="flex-shrink-0"
-                          />
-                          <span className="font-semibold">Total Harga</span>
-                        </div>
-                        <span className="text-xl font-bold flex-shrink-0">
-                          {formatPrice(shipment.price)}
-                        </span>
-                      </div>
-                      <div className="mt-4 p-3 bg-white/10 rounded-xl">
-                        <div className="flex items-center justify-between gap-4">
-                          <span className="font-medium">Status Pembayaran</span>
-                          <Badge
-                            variant={
-                              shipment.paymentStatus === "PAID"
-                                ? "default"
-                                : "secondary"
-                            }
-                            className="bg-white text-dark-green flex-shrink-0"
-                          >
-                            {shipment.paymentStatus}
-                          </Badge>
-                        </div>
-                      </div>
-                      {shipment.paymentStatus === "PENDING" &&
-                        shipment.payment?.invoiceUrl && (
-                          <Button
-                            onClick={() =>
-                              window.open(shipment.payment.invoiceUrl, "_blank")
-                            }
-                            className="w-full bg-white text-dark-green hover:bg-gray-100 font-semibold"
-                          >
-                            <span className="truncate">Bayar Sekarang</span>
-                          </Button>
-                        )}
-                    </>
-                  ) : (
-                    <div className="text-center py-8">
-                      <CardPos size={32} className="mx-auto mb-2 opacity-50" />
-                      <p>Informasi pembayaran tidak tersedia</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+                          className="w-full bg-white text-dark-green hover:bg-gray-100 font-semibold"
+                        >
+                          <span className="truncate">Bayar Sekarang</span>
+                        </Button>
+                      )}
+                  </>
+                ) : (
+                  <div className="text-center py-8">
+                    <CardPos size={32} className="mx-auto mb-2 opacity-50" />
+                    <p>Informasi pembayaran tidak tersedia</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
         </div>
-      </Page>
-    </>
+      </div>
+    </Page>
   );
 };
+
 export default DetailPage;

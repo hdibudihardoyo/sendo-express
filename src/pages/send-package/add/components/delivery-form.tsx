@@ -20,7 +20,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { DirectboxReceive, DirectboxSend } from "iconsax-reactjs";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
-import { useEffect } from "react";
 import { toast } from "react-hot-toast";
 import {
   deliveryFormSchema,
@@ -28,44 +27,48 @@ import {
 } from "@/lib/validations/shipment";
 import { useUserAddresses } from "@/hooks/use-user-address";
 import { useCreateShipment } from "@/hooks/use-shipment";
-import { useAuth } from "@/hooks/use-auth";
 
 export function DeliveryForm() {
   const navigate = useNavigate();
-  const { data: userAddresses = [], isLoading: addressesLoading } =
+  const { data: userAddressesResponse, isLoading: addressesLoading } =
     useUserAddresses();
-
+  const userAddresses = userAddressesResponse?.data ?? [];
   const createShipment = useCreateShipment();
-  const { user } = useAuth();
+
+  const defaultValues: DeliveryFormData = {
+    pickupAddressId: 0,
+    destinationAddress: "",
+    packageType: "",
+    recipientName: "",
+    recipientPhone: "",
+    senderName: "",
+    senderPhone: "",
+    totalWeight: 500,
+    deliveryType: "regular",
+  };
 
   const form = useForm<DeliveryFormData>({
     resolver: zodResolver(deliveryFormSchema),
-    defaultValues: {
-      senderPhone: "",
-      totalWeight: 500,
-      senderName: user?.fullName || "",
-    },
+    defaultValues,
   });
-
-  // Update form when user data is available
-  useEffect(() => {
-    if (user) {
-      form.setValue("senderName", user.fullName || "");
-      form.setValue("senderPhone", "");
-    }
-  }, [user, form]);
 
   async function onSubmit(values: DeliveryFormData) {
     if (userAddresses.length === 0) {
       toast.error(
         "Anda belum memiliki alamat. Silakan tambah alamat terlebih dahulu.",
       );
+      navigate("/send-package/no-address");
       return;
     }
 
     createShipment.mutate(values, {
       onSuccess: (shipment) => {
         navigate(`/send-package/pay/${shipment.id}`);
+      },
+      onError: (error: Error) => {
+        toast.error(
+          error.message || "Gagal membuat pengiriman. Silakan coba lagi.",
+        );
       },
     });
   }
@@ -149,7 +152,6 @@ export function DeliveryForm() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="destinationAddress"
@@ -171,7 +173,6 @@ export function DeliveryForm() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="senderName"
@@ -188,7 +189,6 @@ export function DeliveryForm() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="senderPhone"
@@ -205,7 +205,6 @@ export function DeliveryForm() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="deliveryType"
@@ -238,7 +237,6 @@ export function DeliveryForm() {
                   )}
                 />
               </div>
-
               <div className="space-y-6">
                 <FormField
                   control={form.control}
@@ -256,7 +254,6 @@ export function DeliveryForm() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="recipientPhone"
@@ -273,7 +270,6 @@ export function DeliveryForm() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="totalWeight"
@@ -296,7 +292,6 @@ export function DeliveryForm() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="packageType"
@@ -325,7 +320,6 @@ export function DeliveryForm() {
                     </FormItem>
                   )}
                 />
-
                 <Button
                   type="submit"
                   className="w-full bg-dark-green"

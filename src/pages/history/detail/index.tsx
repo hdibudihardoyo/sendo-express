@@ -17,6 +17,7 @@ import {
   User,
 } from "iconsax-reactjs";
 import { Slash } from "lucide-react";
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router";
 import { useMeta, META_DATA } from "@/hooks/use-meta";
 import { useHistoryById } from "@/hooks/use-history";
@@ -30,9 +31,18 @@ const DetailHistoryPage = () => {
   useMeta(META_DATA["history-detail"]);
   const { id } = useParams();
   const navigate = useNavigate();
-  const historyId = id ? parseInt(id) : 0;
-  const { data, isLoading, isError } = useHistoryById(historyId);
+
+  const isValidId = !!id && !isNaN(parseInt(id));
+  const historyId = isValidId ? parseInt(id!) : 0;
+
+  const { data, isLoading, isError, error } = useHistoryById(historyId);
   const shipment = data?.data ?? null;
+
+  useEffect(() => {
+    if (!isValidId) {
+      navigate("/history", { replace: true });
+    }
+  }, [isValidId, navigate]);
 
   const breadcrumbs: PageBreadcrumbItem[] = [
     { label: "Riwayat Pengiriman", href: "/history" },
@@ -48,8 +58,7 @@ const DetailHistoryPage = () => {
       minute: "2-digit",
     });
 
-  if (!id || isNaN(historyId)) {
-    navigate("/history");
+  if (!isValidId) {
     return null;
   }
 
@@ -67,6 +76,9 @@ const DetailHistoryPage = () => {
   }
 
   if (isError || !shipment) {
+    const errorMessage =
+      error?.message || "Data pengiriman yang Anda cari tidak dapat ditemukan.";
+
     return (
       <Page title="Detail Pengiriman">
         <div className="text-center py-8">
@@ -74,9 +86,7 @@ const DetailHistoryPage = () => {
           <h3 className="text-lg font-semibold mb-2">
             Pengiriman Tidak Ditemukan
           </h3>
-          <p className="text-secondary mb-4">
-            Data pengiriman yang Anda cari tidak dapat ditemukan.
-          </p>
+          <p className="text-secondary mb-4">{errorMessage}</p>
           <Button onClick={() => navigate("/history")} variant="darkGreen">
             Kembali ke Riwayat
           </Button>

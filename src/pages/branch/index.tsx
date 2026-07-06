@@ -3,23 +3,20 @@ import { Input } from "@/components/ui/input";
 import { useMeta, META_DATA } from "@/hooks/use-meta";
 import { useBranches } from "@/hooks/use-branch";
 import { DataTable, columns, AddBranchModal } from "./components";
-import { PermissionGuard } from "@/components";
 import { PaginationControl } from "@/components/ui/pagination-control";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useSearchParams } from "react-router";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 
-const LIMIT = 5;
+const DEFAULT_LIMIT = 5;
 
 export default function BranchPage() {
   useMeta(META_DATA.branch);
-
   const [searchParams, setSearchParams] = useSearchParams();
-
   const page = Number(searchParams.get("page") || 1);
+  const limit = Number(searchParams.get("limit") || DEFAULT_LIMIT);
   const nameParam = searchParams.get("name") ?? "";
-
   const [inputName, setInputName] = useState(nameParam);
   const debouncedName = useDebounce(inputName, 400);
 
@@ -31,6 +28,9 @@ export default function BranchPage() {
           next.set("name", debouncedName);
         } else {
           next.delete("name");
+        }
+        if (!next.get("limit")) {
+          next.set("limit", String(DEFAULT_LIMIT));
         }
         next.set("page", "1");
         return next;
@@ -47,7 +47,7 @@ export default function BranchPage() {
   } = useBranches({
     name: debouncedName || undefined,
     page,
-    limit: LIMIT,
+    limit,
   });
 
   const branches = data?.data ?? [];
@@ -82,17 +82,10 @@ export default function BranchPage() {
   }
 
   return (
-    <Page
-      title="Daftar Cabang 🏢"
-      action={
-        <PermissionGuard permission="branches.create">
-          <AddBranchModal />
-        </PermissionGuard>
-      }
-    >
+    <Page title="Daftar Cabang 🏢" action={<AddBranchModal />}>
       <Input
         type="text"
-        placeholder="Cari Cabang berdasarkan Nama"
+        placeholder="Cari berdasarkan Nama Cabang"
         className="mb-4 w-full max-w-sm bg-white"
         value={inputName}
         onChange={(e) => setInputName(e.target.value)}
@@ -103,7 +96,7 @@ export default function BranchPage() {
           <p className="text-sm">Memuat data cabang...</p>
         </div>
       ) : (
-        <PermissionGuard permission="branches.read">
+        <>
           <DataTable data={branches} columns={columns()} title="Semua Cabang" />
           {paging && paging.totalPages > 1 && (
             <PaginationControl
@@ -111,7 +104,7 @@ export default function BranchPage() {
               onPageChange={handlePageChange}
             />
           )}
-        </PermissionGuard>
+        </>
       )}
     </Page>
   );

@@ -48,7 +48,7 @@ export const deliveryColumns = (
     },
   },
   {
-    id: "pickupAddr",
+    id: "pickupAddress",
     header: "Alamat Pickup",
     cell: ({ row }) => {
       return (
@@ -59,7 +59,7 @@ export const deliveryColumns = (
     },
   },
   {
-    id: "destinationAddr",
+    id: "destinationAddress",
     header: "Alamat Tujuan",
     cell: ({ row }) => {
       return (

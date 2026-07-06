@@ -17,16 +17,17 @@ export const courierShipmentKeys = {
     [...courierShipmentKeys.details(), trackingNumber] as const,
 };
 
-// get all shipments
+// get all courier shipments
 export const useCourierShipments = (filters?: CourierShipmentParams) => {
   return useQuery({
     queryKey: courierShipmentKeys.list(filters),
     queryFn: () => courierShipmentService.getAllCourierShipments(filters),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 };
 
-// get one shipment
+// get one courier shipment
 export const useCourierShipment = (trackingNumber: string) => {
   return useQuery({
     queryKey: courierShipmentKeys.detail(trackingNumber),

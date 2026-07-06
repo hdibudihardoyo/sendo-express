@@ -20,7 +20,8 @@ export const useGetAllShipmentBranch = (params?: ShipmentBranchParams) => {
   return useQuery({
     queryKey: shipmentBranchKeys.list(params),
     queryFn: () => shipmentBranchService.getAllShipmentBranch(params),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 };
 

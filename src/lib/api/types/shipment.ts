@@ -112,7 +112,7 @@ export interface CreateShipment {
   totalWeight: number;
 }
 
-export interface GetAllShipmentsParams {
+export interface ShipmentsParams {
   trackingNumber?: string;
   page?: number;
   limit?: number;

@@ -8,22 +8,25 @@ import type {
   SingleUserAddressResponse,
   UpdateUserAddressRequest,
   DeleteUserAddressResponse,
+  UserAddressParams,
 } from "../types/user-address";
 
 export const userAddressService = {
   // get all user addresses
-  async getAllUserAddresses(): Promise<UserAddress[]> {
+  async getAllUserAddresses(
+    params?: UserAddressParams,
+  ): Promise<UserAddressResponse> {
     try {
       const response = await apiClient.get<UserAddressResponse>(
         "/api/user-addresses",
+        { params },
       );
-      return response.data.data;
+      return response.data;
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);
     }
   },
-
   // get single user address by id
   async getUserAddressById(userAddressId: number): Promise<UserAddress> {
     try {
@@ -36,7 +39,6 @@ export const userAddressService = {
       throw new Error(errorMessage);
     }
   },
-
   // create new user address
   async createUserAddress(
     data: CreateUserAddressRequest,
@@ -52,7 +54,6 @@ export const userAddressService = {
       throw new Error(errorMessage);
     }
   },
-
   // update user address by id
   async updateUserAddress(
     userAddressId: number,
@@ -69,7 +70,6 @@ export const userAddressService = {
       throw new Error(errorMessage);
     }
   },
-
   // delete user address by id
   async deleteUserAddress(userAddressId: number): Promise<void> {
     try {

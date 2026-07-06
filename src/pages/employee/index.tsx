@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import type { EmployeeBranchFilters } from "@/lib/api/types/employee";
 import { Loader2 } from "lucide-react";
 
-const LIMIT = 5;
+const DEFAULT_LIMIT = 5;
 
 type FilterField = "name" | "email" | "phoneNumber" | "branchName";
 
@@ -33,32 +33,27 @@ const FILTER_OPTIONS: { value: FilterField; label: string }[] = [
 
 export default function EmployeePage() {
   useMeta(META_DATA.employee);
-
   const [searchParams, setSearchParams] = useSearchParams();
-
   const [filterField, setFilterField] = useState<FilterField>(
     (searchParams.get("filter") as FilterField) ?? "name",
   );
-
   const [inputValue, setInputValue] = useState(
     searchParams.get(filterField) ?? "",
   );
-
   const debouncedSearch = useDebounce(inputValue, 500);
 
   useEffect(() => {
+    const currentLimit = searchParams.get("limit") ?? String(DEFAULT_LIMIT);
     const params: Record<string, string> = {
       page: "1",
-      limit: String(LIMIT),
+      limit: currentLimit,
       filter: filterField,
     };
-
     if (debouncedSearch) {
       params[filterField] = debouncedSearch;
     }
-
     setSearchParams(params, { replace: true });
-  }, [debouncedSearch, filterField, setSearchParams]);
+  }, [debouncedSearch, filterField]);
 
   const handleFilterFieldChange = (value: FilterField) => {
     setFilterField(value);
@@ -66,6 +61,7 @@ export default function EmployeePage() {
   };
 
   const currentPage = Number(searchParams.get("page") ?? 1);
+  const limit = Number(searchParams.get("limit") ?? DEFAULT_LIMIT);
 
   const handlePageChange = (page: number) => {
     setSearchParams(
@@ -81,7 +77,7 @@ export default function EmployeePage() {
   const filters: EmployeeBranchFilters = {
     [filterField]: debouncedSearch || undefined,
     page: currentPage,
-    limit: LIMIT,
+    limit,
   };
 
   const {
@@ -129,7 +125,6 @@ export default function EmployeePage() {
             ))}
           </SelectContent>
         </Select>
-
         <Input
           type="text"
           placeholder={`Cari berdasarkan ${activePlaceholder}`}
@@ -138,7 +133,6 @@ export default function EmployeePage() {
           onChange={(e) => setInputValue(e.target.value)}
         />
       </div>
-
       {isLoadingEmployees ? (
         <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />

@@ -10,20 +10,19 @@ import type {
   CourierShipmentActionResponse,
   PickUpShipmentRequest,
   DeliverToCustomerRequest,
-  CourierShipmentListItem,
 } from "@/lib/api/types/delivery";
 
 // Find All Shipments Courier
 export const courierShipmentService = {
   async getAllCourierShipments(
     params?: CourierShipmentParams,
-  ): Promise<CourierShipmentListItem[]> {
+  ): Promise<GetAllCourierShipmentsResponse> {
     try {
       const response = await apiClient.get<GetAllCourierShipmentsResponse>(
         "/api/shipments/courier",
         { params },
       );
-      return response.data.data;
+      return response.data;
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);

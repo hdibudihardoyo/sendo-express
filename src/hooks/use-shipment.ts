@@ -1,15 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { shipmentService } from "@/lib/api/services/shipment";
 import { toast } from "react-hot-toast";
-import type {
-  CreateShipment,
-  GetAllShipmentsParams,
-} from "@/lib/api/types/shipment";
+import type { CreateShipment, ShipmentsParams } from "@/lib/api/types/shipment";
 
 export const shipmentKeys = {
   all: ["shipments"] as const,
   lists: () => [...shipmentKeys.all, "list"] as const,
-  list: (filters?: GetAllShipmentsParams) =>
+  list: (filters?: ShipmentsParams) =>
     [...shipmentKeys.lists(), filters] as const,
   details: () => [...shipmentKeys.all, "detail"] as const,
   detail: (shipmentId: number) =>
@@ -20,12 +17,13 @@ export const shipmentKeys = {
     [...shipmentKeys.detail(shipmentId), "invoice"] as const,
 };
 
-// Get all shipments dengan optional params (trackingNumber, page, limit)
-export const useShipments = (filters?: GetAllShipmentsParams) => {
+// Get all shipments
+export const useShipments = (filters?: ShipmentsParams) => {
   return useQuery({
     queryKey: shipmentKeys.list(filters),
     queryFn: () => shipmentService.getAllShipments(filters),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 };
 
@@ -39,15 +37,16 @@ export const useShipmentById = (shipmentId: number) => {
   });
 };
 
-// Tracking shipment berdasarkan nomor resi (trackingNumber)
+// Tracking shipment berdasarkan nomor resi
 export const useTrackShipment = () => {
   return useMutation({
-    mutationFn: (data: { trackingNumber: string }) =>
-      shipmentService.trackShipment(data),
-    onError: (error: Error) => {
-      const errorMessage =
-        error.message || "Gagal melacak pengiriman. Silakan coba lagi.";
-      toast.error(errorMessage);
+    mutationFn: (trackingNumber: string) =>
+      shipmentService.trackShipment(trackingNumber),
+    onSuccess: () => {
+      toast.success("Pengiriman berhasil dilacak!");
+    },
+    onError: () => {
+      toast.error("Paket yang dilacak tidak ditemukan!");
     },
   });
 };

@@ -1,6 +1,7 @@
 import type {
   CreateUserAddressRequest,
   UpdateUserAddressRequest,
+  UserAddressParams,
 } from "../lib/api/types/user-address";
 import { toast } from "react-hot-toast";
 import { userAddressService } from "../lib/api/services/user-address";
@@ -10,17 +11,19 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 export const userAddressKeys = {
   all: ["user-addresses"] as const,
   lists: () => [...userAddressKeys.all, "list"] as const,
-  list: (filters: string) => [...userAddressKeys.lists(), { filters }] as const,
+  list: (filters?: UserAddressParams) =>
+    [...userAddressKeys.lists(), filters] as const,
   details: () => [...userAddressKeys.all, "detail"] as const,
   detail: (id: number) => [...userAddressKeys.details(), id] as const,
 };
 
 // get all user addresses
-export const useUserAddresses = () => {
+export const useUserAddresses = (filters?: UserAddressParams) => {
   return useQuery({
-    queryKey: userAddressKeys.lists(),
-    queryFn: userAddressService.getAllUserAddresses,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    queryKey: userAddressKeys.list(filters),
+    queryFn: () => userAddressService.getAllUserAddresses(filters),
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 };
 
@@ -30,7 +33,7 @@ export const useUserAddress = (userAddressId: number) => {
     queryKey: userAddressKeys.detail(userAddressId),
     queryFn: () => userAddressService.getUserAddressById(userAddressId),
     enabled: !!userAddressId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 };
 
@@ -79,6 +82,7 @@ export const useDeleteUserAddress = () => {
     mutationFn: (userAddressId: number) =>
       userAddressService.deleteUserAddress(userAddressId),
     onSuccess: (_, userAddressId) => {
+      toast.success("Alamat berhasil dihapus!");
       queryClient.invalidateQueries({ queryKey: userAddressKeys.lists() });
       queryClient.removeQueries({
         queryKey: userAddressKeys.detail(userAddressId),

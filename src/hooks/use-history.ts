@@ -16,6 +16,7 @@ export const useGetAllHistory = (params?: HistoryParams) => {
     queryKey: historyKeys.list(params),
     queryFn: () => getAllHistory(params),
     staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 };
 

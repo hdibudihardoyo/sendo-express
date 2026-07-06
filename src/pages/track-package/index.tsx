@@ -41,19 +41,8 @@ const Index = () => {
       toast.error("Silakan masukkan nomor resi");
       return;
     }
-
     setHasSearched(true);
-    trackShipment.mutate(
-      { trackingNumber: trackingNumber.trim() },
-      {
-        onSuccess: () => {
-          toast.success("Paket ditemukan!");
-        },
-        onError: () => {
-          toast.error("Paket tidak ditemukan");
-        },
-      },
-    );
+    trackShipment.mutate(trackingNumber.trim());
   };
 
   const formatDate = (dateString: string) => {

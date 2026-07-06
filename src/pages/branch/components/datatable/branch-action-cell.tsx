@@ -55,8 +55,8 @@ export function BranchActionCell({
             <DialogHeader>
               <DialogTitle>Konfirmasi Hapus</DialogTitle>
               <DialogDescription>
-                Apakah Anda yakin ingin menghapus cabang ini *{branch.name}*?
-                Tindakan ini tidak dapat dibatalkan.
+                Apakah Anda yakin ingin menghapus <strong>{branch.name}</strong>
+                ? Tindakan ini tidak dapat dibatalkan.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>

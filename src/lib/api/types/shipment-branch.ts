@@ -27,7 +27,7 @@ export interface ShipmentBranch {
   status: DeliveryStatus;
   scanTime: string;
   description: string;
-  ScannedByUser: ScannedByUser;
+  scannedByUserId: ScannedByUser;
 }
 
 export interface ShipmentBranchSummaryData {

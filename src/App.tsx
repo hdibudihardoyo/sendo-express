@@ -121,7 +121,7 @@ function App() {
         <Route
           path="/send-package"
           element={
-            <AuthGuard requiredAuth={true} role="customer">
+            <AuthGuard requiredAuth={true}>
               <SendPackagePage />
             </AuthGuard>
           }
@@ -129,7 +129,7 @@ function App() {
         <Route
           path="/send-package/no-address"
           element={
-            <AuthGuard requiredAuth={true} role="customer">
+            <AuthGuard requiredAuth={true}>
               <NoAddressPage />
             </AuthGuard>
           }
@@ -137,7 +137,7 @@ function App() {
         <Route
           path="/send-package/add"
           element={
-            <AuthGuard requiredAuth={true} role="customer">
+            <AuthGuard requiredAuth={true}>
               <AddSendPackagePage />
             </AuthGuard>
           }
@@ -145,7 +145,7 @@ function App() {
         <Route
           path="/send-package/detail/:id"
           element={
-            <AuthGuard requiredAuth={true} permission="shipments.read">
+            <AuthGuard requiredAuth={true}>
               <DetailSendPackagePage />
             </AuthGuard>
           }
@@ -153,13 +153,12 @@ function App() {
         <Route
           path="/send-package/pay/:id"
           element={
-            <AuthGuard requiredAuth={true} permission="shipments.read">
+            <AuthGuard requiredAuth={true}>
               <PaySendPackagePage />
             </AuthGuard>
           }
         />
 
-        {/* History Management */}
         <Route
           path="/history"
           element={
@@ -171,7 +170,7 @@ function App() {
         <Route
           path="/history/detail/:id"
           element={
-            <AuthGuard requiredAuth={true} role="customer">
+            <AuthGuard requiredAuth={true}>
               <DetailHistoryPage />
             </AuthGuard>
           }

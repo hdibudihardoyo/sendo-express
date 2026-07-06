@@ -1,7 +1,7 @@
 // Branch related types
 import type { ApiMeta, Pagination } from "./index";
 
-export interface BranchFilters {
+export interface BranchParams {
   name?: string;
   page?: number;
   limit?: number;

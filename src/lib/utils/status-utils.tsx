@@ -1,5 +1,5 @@
-import { Timer, TruckTime, BoxTick, Location } from "iconsax-reactjs";
-import type { DeliveryStatus } from "@/lib/api/types/shipment";
+import { Timer, TruckTime, BoxTick, Location, CardPos } from "iconsax-reactjs";
+import type { DeliveryStatus, PaymentStatus } from "@/lib/api/types/shipment";
 import type { ReactNode } from "react";
 
 type BadgeVariant =
@@ -116,3 +116,85 @@ export const getStatusBadgeVariant = (status: DeliveryStatus): BadgeVariant =>
   status
     ? (STATUS_CONFIG[status]?.badge ?? DEFAULT_STATUS.badge)
     : DEFAULT_STATUS.badge;
+
+const PAYMENT_STATUSES: PaymentStatus[] = [
+  "PENDING",
+  "PAID",
+  "SETTLED",
+  "EXPIRED",
+  "FAILED",
+  "REFUNDED",
+];
+
+export const isPaymentStatus = (status: string): status is PaymentStatus =>
+  PAYMENT_STATUSES.includes(status as PaymentStatus);
+
+export const getPaymentVariant = (status: PaymentStatus): BadgeVariant => {
+  switch (status) {
+    case "PENDING":
+      return "warning";
+    case "PAID":
+    case "SETTLED":
+      return "darkGreen";
+    case "EXPIRED":
+    case "FAILED":
+      return "destructive";
+    case "REFUNDED":
+      return "secondary";
+    default:
+      return "secondary";
+  }
+};
+
+export const formatPaymentStatus = (status: PaymentStatus): string => {
+  switch (status) {
+    case "PENDING":
+      return "Belum Bayar";
+    case "PAID":
+      return "Sudah Bayar";
+    case "SETTLED":
+      return "Lunas";
+    case "EXPIRED":
+      return "Kadaluwarsa";
+    case "FAILED":
+      return "Gagal Bayar";
+    case "REFUNDED":
+      return "Dikembalikan";
+    default:
+      return status;
+  }
+};
+
+export const isPaymentCompleted = (status: PaymentStatus) =>
+  status === "PAID" || status === "SETTLED";
+
+const PACKAGE_TYPE_LABELS: Record<string, string> = {
+  Furniture: "Furniture",
+  Electronics: "Elektronik",
+  Clothing: "Pakaian",
+  Documents: "Dokumen",
+};
+
+const DELIVERY_TYPE_LABELS: Record<string, string> = {
+  regular: "Regular",
+  next_day: "Next Day",
+  same_day: "Same Day",
+};
+
+export const getDeliveryTypeLabel = (deliveryType: string): string =>
+  DELIVERY_TYPE_LABELS[deliveryType] ?? deliveryType;
+
+export const getPackageTypeLabel = (packageType: string): string =>
+  PACKAGE_TYPE_LABELS[packageType] ?? packageType;
+
+export const getHistoryLabel = (status: string): string =>
+  isPaymentStatus(status)
+    ? formatPaymentStatus(status)
+    : getStatusLabel(status as DeliveryStatus);
+
+export const getHistoryIcon = (status: string) => {
+  if (isPaymentStatus(status)) {
+    return <CardPos size={20} variant="Bold" />;
+  }
+  return getStatusIcon(status as DeliveryStatus);
+};

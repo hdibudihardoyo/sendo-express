@@ -15,6 +15,7 @@ import {
 import { Slash } from "lucide-react";
 import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
+import { Loader2 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useMeta, META_DATA } from "@/hooks/use-meta";
 import { useShipmentById } from "@/hooks/use-shipment";
@@ -64,7 +65,7 @@ const DetailPage = () => {
     }
     // open the invoice in a new tab
     window.open(shipment.payment.invoiceUrl, "_blank");
-    toast.success("Redirecting to payment page...");
+    toast.success("Mengarahkan ke halaman pembayaran...");
   };
 
   if (error) {
@@ -76,8 +77,9 @@ const DetailPage = () => {
   if (loading) {
     return (
       <Page title="Pembayaran Pengiriman">
-        <div className="flex items-center justify-center h-64">
-          <p>Memuat data pengiriman...</p>
+        <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-sm">Memuat detail pengiriman...</p>
         </div>
       </Page>
     );

@@ -205,6 +205,9 @@ export default function AddUserAddressPage() {
               </div>
 
               <input type="hidden" {...register("photo")} />
+              {errors.photo && (
+                <p className="text-sm text-red-600">{errors.photo.message}</p>
+              )}
 
               <div className="pt-4">
                 <Button

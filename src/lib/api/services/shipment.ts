@@ -3,11 +3,10 @@ import { handleAxiosError } from "../../utils/error-handler";
 import type { AxiosErrorType } from "../../utils/api-error-types";
 import type {
   CreateShipment,
-  GetAllShipmentsParams,
+  ShipmentsParams,
   GetAllShipmentsResponse,
   GetOneShipmentResponse,
   CreateShipmentResponse,
-  TrackingShipmentRequest,
   TrackShipmentResponse,
   Shipment,
 } from "@/lib/api/types/shipment";
@@ -28,7 +27,9 @@ export const shipmentService = {
   },
 
   // get all shipments
-  async getAllShipments(params?: GetAllShipmentsParams): Promise<Shipment[]> {
+  async getAllShipments(
+    params?: ShipmentsParams,
+  ): Promise<GetAllShipmentsResponse> {
     try {
       const response = await apiClient.get<GetAllShipmentsResponse>(
         "/api/shipments",
@@ -36,7 +37,7 @@ export const shipmentService = {
           params,
         },
       );
-      return response.data.data;
+      return response.data;
     } catch (error) {
       const errorMessage = handleAxiosError(error as AxiosErrorType);
       throw new Error(errorMessage);
@@ -56,11 +57,11 @@ export const shipmentService = {
     }
   },
 
-  async trackShipment(data: TrackingShipmentRequest): Promise<Shipment> {
+  async trackShipment(trackingNumber: string): Promise<Shipment> {
     try {
       const response = await apiClient.post<TrackShipmentResponse>(
         "/api/shipments/trackings",
-        data,
+        { trackingNumber },
       );
       return response.data.data;
     } catch (error) {

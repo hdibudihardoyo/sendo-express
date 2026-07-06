@@ -5,44 +5,66 @@ import { Button } from "@/components/ui/button";
 import { Toaster } from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { AddSquare } from "iconsax-reactjs";
 import { useMeta, META_DATA } from "@/hooks/use-meta";
 import { useUserAddresses } from "@/hooks/use-user-address";
-import { useState } from "react";
+import { PaginationControl } from "@/components/ui/pagination-control";
+import { useDebounce } from "@/hooks/use-debounce";
+import { useSearchParams } from "react-router";
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+
+const DEFAULT_LIMIT = 5;
 
 export default function UserAddressesPage() {
-  // Use custom meta hook
   useMeta(META_DATA["user-addresses"]);
 
-  const {
-    data: userAddresses = [],
-    isLoading: loadingUserAddresses,
-    error: errorUserAddresses,
-  } = useUserAddresses();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Number(searchParams.get("page") || 1);
+  const [limit] = useState(Number(searchParams.get("limit")) || DEFAULT_LIMIT);
+  const addressParam = searchParams.get("address") ?? "";
+  const [inputAddress, setInputAddress] = useState(addressParam);
+  const debouncedAddress = useDebounce(inputAddress, 400);
 
-  // Filter user addresses based on search term
-  const filteredUserAddresses = userAddresses.filter((address) => {
-    return (
-      address.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      address.tag.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      address.label.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (debouncedAddress) {
+          next.set("address", debouncedAddress);
+        } else {
+          next.delete("address");
+        }
+        if (!next.get("limit")) {
+          next.set("limit", String(DEFAULT_LIMIT));
+        }
+        next.set("page", "1");
+        return next;
+      },
+      { replace: true },
     );
+  }, [debouncedAddress]);
+
+  const handlePageChange = (newPage: number) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("page", String(newPage));
+    setSearchParams(next, { replace: true });
+  };
+
+  const {
+    data,
+    isLoading: loadingUserAddresses,
+    isFetching: fetchingUserAddresses,
+    error: errorUserAddresses,
+  } = useUserAddresses({
+    address: debouncedAddress || undefined,
+    page,
+    limit,
   });
 
-  if (loadingUserAddresses) {
-    return (
-      <Page title="Alamat Saya">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-            <p className="text-gray-600">Memuat data alamat...</p>
-          </div>
-        </div>
-      </Page>
-    );
-  }
+  const userAddresses = data?.data ?? [];
+  const paging = data?.paging;
+  const isLoading = loadingUserAddresses || fetchingUserAddresses;
 
   if (errorUserAddresses) {
     return (
@@ -59,42 +81,47 @@ export default function UserAddressesPage() {
   }
 
   return (
-    <>
-      <Page
-        title="Alamat Saya"
-        action={
-          <Link to="/user-addresses/add">
-            <Button variant="darkGreen">
-              Tambah Alamat Baru
-              <AddSquare className="ml-auto" variant="Bold" size="20" />
-            </Button>
-          </Link>
-        }
-      >
-        <div className="flex justify-between items-center mb-4">
-          <Input
-            type="text"
-            placeholder="Cari Alamat"
-            className="w-full max-w-sm bg-white"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+    <Page
+      title="Alamat Saya"
+      action={
+        <Link to="/user-addresses/add">
+          <Button variant="darkGreen">
+            Tambah Alamat Baru
+            <AddSquare className="ml-auto" variant="Bold" size="20" />
+          </Button>
+        </Link>
+      }
+    >
+      <div className="flex justify-between items-center mb-4">
+        <Input
+          type="text"
+          placeholder="Cari berdasarkan alamat"
+          className="w-full max-w-sm bg-white"
+          value={inputAddress}
+          onChange={(e) => setInputAddress(e.target.value)}
+        />
+      </div>
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center h-64 gap-3 text-muted-foreground">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <p className="text-sm">Memuat data alamat...</p>
         </div>
-        {loadingUserAddresses ? (
-          <div className="space-y-4">
-            <Skeleton className="h-4 w-[250px]" />
-            <Skeleton className="h-4 w-[200px]" />
-            <Skeleton className="h-[400px] w-full" />
-          </div>
-        ) : (
+      ) : (
+        <div className="space-y-6">
           <DataTable
-            data={filteredUserAddresses}
+            data={userAddresses}
             columns={createColumns()}
             title="Daftar Alamat"
           />
-        )}
-        <Toaster position="top-right" />
-      </Page>
-    </>
+          {paging && paging.totalPages > 1 && (
+            <PaginationControl
+              paging={paging}
+              onPageChange={handlePageChange}
+            />
+          )}
+        </div>
+      )}
+      <Toaster position="top-right" />
+    </Page>
   );
 }

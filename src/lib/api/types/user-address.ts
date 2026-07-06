@@ -7,19 +7,27 @@ export interface CreateUserAddressRequest {
   photo?: string;
 }
 
-export interface UpdateUserAddressRequest {
+export interface UserAddressParams {
   address?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface UpdateUserAddressRequest {
+  address: string;
   tag?: string;
   label?: string;
   photo?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface UserAddress {
   id: number;
   address: string;
-  tag: string;
-  label: string;
-  photo?: string | null;
+  tag?: string;
+  label?: string;
+  photo?: string;
   latitude?: number;
   longitude?: number;
 }

@@ -21,7 +21,7 @@ export interface HistoryResponse {
   paging: Pagination;
 }
 
-export interface ShipmentHistoryInfo {
+export interface HistoryInfo {
   senderAddress: string;
   senderName: string;
   senderPhone: string;
@@ -30,7 +30,7 @@ export interface ShipmentHistoryInfo {
   recipientPhone: string;
 }
 
-export interface ShipmentTimelineEntry {
+export interface TimelineEntry {
   id: number;
   createdAt: string;
   status: DeliveryStatus;
@@ -39,8 +39,8 @@ export interface ShipmentTimelineEntry {
 
 export interface HistoryDetail extends History {
   deliveryType: string;
-  shipmentInfo: ShipmentHistoryInfo;
-  shipmentHistories: ShipmentTimelineEntry[];
+  shipmentInfo: HistoryInfo;
+  shipmentHistories: TimelineEntry[];
 }
 
 export interface SingleHistoryResponse {

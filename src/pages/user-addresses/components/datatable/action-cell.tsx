@@ -59,12 +59,7 @@ export function ActionCell({ userAddress, onDataChange }: ActionCellProps) {
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogTrigger asChild>
-          <Button
-            variant="destructive"
-            size="sm"
-            className="rounded-lg"
-            disabled={deleteUserAddress.isPending}
-          >
+          <Button variant="destructive" size="sm" className="rounded-lg">
             Hapus
           </Button>
         </DialogTrigger>
@@ -80,10 +75,15 @@ export function ActionCell({ userAddress, onDataChange }: ActionCellProps) {
             <Button
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
+              disabled={deleteUserAddress.isPending}
             >
               Batal
             </Button>
-            <Button variant="destructive" onClick={handleDelete}>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleteUserAddress.isPending}
+            >
               Hapus
             </Button>
           </DialogFooter>

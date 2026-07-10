@@ -53,14 +53,19 @@ const data = {
       title: "Main Menu",
       items: [
         { title: "Dashboard", url: "/dashboard", icon: Chart2 },
-        { title: "Alamat Saya", url: "/user-addresses", icon: Location, role: "customer" },
+        {
+          title: "Alamat Saya",
+          url: "/user-addresses",
+          icon: Location,
+          role: "customer",
+        },
         { title: "Profile", url: "/profile", icon: User },
         { title: "Lacak Paket", url: "/track-package", icon: Routing },
         {
           title: "Daftar Pengiriman",
           url: "/delivery",
           icon: ClipboardTick,
-          roles: ["super-admin", "admin-branch", "courier"],
+          roles: ["super_admin", "admin_branch", "courier"],
         },
         {
           title: "Kirim Paket",
@@ -72,7 +77,7 @@ const data = {
           title: "Scan Paket",
           url: "/shipment-branch",
           icon: Truck,
-          roles: ["admin-branch", "super-admin"],
+          roles: ["admin_branch", "super_admin"],
         },
         {
           title: "History",
@@ -91,19 +96,19 @@ const data = {
           title: "Cabang",
           url: "/branch",
           icon: Buildings,
-          role: "super-admin",
+          role: "super_admin",
         },
         {
           title: "Karyawan",
           url: "/employee",
           icon: UserTag,
-          roles: ["super-admin", "admin-branch"],
+          roles: ["super_admin", "admin_branch"],
         },
         {
           title: "Role",
           url: "/role",
           icon: Shield,
-          role: "super-admin",
+          role: "super_admin",
         },
       ],
     },
@@ -139,11 +144,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const renderMenuItem = (item: MenuItem) => {
     if (item.role || item.roles) {
       return (
-        <PermissionGuard
-          key={item.title}
-          role={item.role}
-          roles={item.roles}
-        >
+        <PermissionGuard key={item.title} role={item.role} roles={item.roles}>
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
@@ -185,11 +186,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const renderMasterMenuItem = (item: MenuItem) => {
     if (item.role || item.roles) {
       return (
-        <PermissionGuard
-          key={item.title}
-          role={item.role}
-          roles={item.roles}
-        >
+        <PermissionGuard key={item.title} role={item.role} roles={item.roles}>
           <SidebarMenuSubItem>
             <SidebarMenuButton
               asChild
@@ -237,7 +234,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           size={32}
         />
         <div className="flex flex-col gap-0.5 leading-none">
-          <span className="font-bold text-xl">SendoExpress</span>
+          <span className="font-bold text-xl">Sendo Express</span>
         </div>
       </SidebarHeader>
       <SidebarContent className="p-6 pt-0">

@@ -31,7 +31,6 @@ export function PermissionGuard({
     const hasRole = allowedRoles.includes(userRole);
 
     if (!hasRole) return <>{fallback}</>;
-    
     if (!permission && !permissions) return <>{children}</>;
   }
 

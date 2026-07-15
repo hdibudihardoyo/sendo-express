@@ -119,6 +119,7 @@ const Index = () => {
       if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
+    // Hapus gambar lama
     if (uploadedPublicId) {
       removeMediaMutation.mutate(String(uploadedPublicId), {
         onSuccess: () => {

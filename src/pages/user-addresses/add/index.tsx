@@ -27,7 +27,6 @@ import { toast } from "react-hot-toast";
 export default function AddUserAddressPage() {
   useMeta(META_DATA["user-addresses-add"]);
   const navigate = useNavigate();
-
   const [photoPreview, setPhotoPreview] = useState<string>("");
   const [uploadedPublicId, setUploadedPublicId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,13 +53,15 @@ export default function AddUserAddressPage() {
     },
   });
 
+  // Reset photo
   const resetPhotoState = () => {
     setPhotoPreview("");
     setUploadedPublicId(null);
-    setValue("photo", "");
+    setValue("photo", "", { shouldValidate: true, shouldDirty: true });
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  // Handle photo upload
   const handlePhotoSelect = async (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -76,6 +77,7 @@ export default function AddUserAddressPage() {
       return;
     }
 
+    // Hapus gambar lama
     if (uploadedPublicId) {
       try {
         await removeMediaMutation.mutateAsync(uploadedPublicId);
@@ -84,13 +86,18 @@ export default function AddUserAddressPage() {
       }
     }
 
+    // Preview lokal dulu
     const reader = new FileReader();
     reader.onload = (e) => setPhotoPreview(e.target?.result as string);
     reader.readAsDataURL(file);
 
+    // Upload ke server
     try {
       const result = await uploadMediaMutation.mutateAsync(file);
-      setValue("photo", result.fileUrl);
+      setValue("photo", result.fileUrl, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
       setUploadedPublicId(result.publicId);
       toast.success("Gambar berhasil diunggah!");
     } catch {
@@ -98,9 +105,9 @@ export default function AddUserAddressPage() {
     }
   };
 
+  // Handle remove photo
   const handleRemovePhoto = () => {
     if (isUploading || isRemoving) return;
-
     if (uploadedPublicId) {
       removeMediaMutation.mutate(uploadedPublicId, {
         onSuccess: () => resetPhotoState(),
@@ -110,8 +117,13 @@ export default function AddUserAddressPage() {
     }
   };
 
+  // Handle address submit
   const onAddressSubmit = (data: CreateUserAddressFormData) => {
-    createUserAddressMutation.mutate(data, {
+    const payload = {
+      ...data,
+      photo: data.photo || undefined,
+    };
+    createUserAddressMutation.mutate(payload, {
       onSuccess: () => navigate("/user-addresses"),
     });
   };
@@ -208,19 +220,6 @@ export default function AddUserAddressPage() {
               {errors.photo && (
                 <p className="text-sm text-red-600">{errors.photo.message}</p>
               )}
-
-              <div className="pt-4">
-                <Button
-                  variant="darkGreen"
-                  type="submit"
-                  disabled={isSaveDisabled}
-                  className="w-full"
-                >
-                  {createUserAddressMutation.isPending
-                    ? "Menyimpan..."
-                    : "Simpan"}
-                </Button>
-              </div>
             </div>
 
             {/* Right: Gambar Patokan */}
@@ -229,7 +228,6 @@ export default function AddUserAddressPage() {
                 <Label className="text-sm font-medium text-gray-700">
                   Gambar Patokan
                 </Label>
-
                 {photoPreview ? (
                   <div className="relative">
                     <img
@@ -272,7 +270,6 @@ export default function AddUserAddressPage() {
                     </div>
                   </div>
                 )}
-
                 <Input
                   type="file"
                   ref={fileInputRef}
@@ -280,7 +277,6 @@ export default function AddUserAddressPage() {
                   onChange={handlePhotoSelect}
                   className="hidden"
                 />
-
                 <Button
                   type="button"
                   variant="outline"
@@ -298,6 +294,18 @@ export default function AddUserAddressPage() {
                 </Button>
               </div>
             </div>
+          </div>
+
+          {/* Submit Button — di luar grid, selalu paling bawah baik mobile maupun desktop */}
+          <div className="pt-8">
+            <Button
+              variant="darkGreen"
+              type="submit"
+              disabled={isSaveDisabled}
+              className="w-full"
+            >
+              {createUserAddressMutation.isPending ? "Menyimpan..." : "Simpan"}
+            </Button>
           </div>
         </form>
       </div>
